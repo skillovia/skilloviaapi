@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require("../models/User");
 
 exports.updateUser = async (req, res) => {
   const userId = req.params.id;
@@ -6,25 +6,45 @@ exports.updateUser = async (req, res) => {
 
   try {
     const updatedUser = await User.update(userId, updates);
-    res.status(200).json({ status: 'success', message: 'User updated successfully.', data: updatedUser });
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "User updated successfully.",
+        data: updatedUser,
+      });
   } catch (error) {
-    res.status(500).json({status: 'error', message: 'Failed to update user.' });
+    res
+      .status(500)
+      .json({ status: "error", message: "Failed to update user." });
   }
 };
-
 
 exports.changeNotificationType = async (req, res) => {
   const userId = req.user.id;
   const notification_type = req.body;
 
   try {
-    const updatedNotification = await User.changeNotificationType(userId, notification_type);
-    res.status(200).json({ status: 'success', message: 'Notification type updated successfully.', data: updatedNotification });
+    const updatedNotification = await User.changeNotificationType(
+      userId,
+      notification_type
+    );
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Notification type updated successfully.",
+        data: updatedNotification,
+      });
   } catch (error) {
-    res.status(500).json({status: 'error', message: 'Failed to update notification type.' });
+    res
+      .status(500)
+      .json({
+        status: "error",
+        message: "Failed to update notification type.",
+      });
   }
 };
-
 
 exports.changeAppearanceMode = async (req, res) => {
   const userId = req.user.id;
@@ -32,8 +52,35 @@ exports.changeAppearanceMode = async (req, res) => {
 
   try {
     const mode = await User.changeAppearanceMode(userId, appearance_mode);
-    res.status(200).json({ status: 'success', message: 'Appearance mode updated successfully.', data: mode });
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Appearance mode updated successfully.",
+        data: mode,
+      });
   } catch (error) {
-    res.status(500).json({status: 'error', message: 'Failed to update appearance mode.' });
+    res
+      .status(500)
+      .json({ status: "error", message: "Failed to update appearance mode." });
+  }
+};
+
+exports.getProfileByUserId = async (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  try {
+    const skill = await Skill.getProfileByUserId(userId);
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Uer profile retrieved successfully.",
+        data: skill,
+      });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "error", message: "Failed to retrieve profile" });
   }
 };

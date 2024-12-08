@@ -1,3 +1,4 @@
+
 CREATE TABLE refreshtoken (
   id SERIAL PRIMARY KEY,
   token TEXT NOT NULL,
