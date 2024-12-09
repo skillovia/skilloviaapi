@@ -11,6 +11,8 @@ const pool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
+  max: 10, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
 });
 
 pool
