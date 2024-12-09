@@ -1,7 +1,7 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 
-class User {
+class Follows {
   static async follow(userId, follower_id) {
     const result = await pool.query(
       "INSERT INTO follows (following_id, follower_id) VALUES ($1,$2) RETURNING *",
@@ -64,4 +64,4 @@ class User {
   }
 }
 
-module.exports = User;
+module.exports = Follows;

@@ -1,4 +1,4 @@
-const Follows = require("../models/Follows");
+const Follows = require("../models/Follows.js");
 
 exports.followAccount = async (req, res) => {
   const userId = req.user.id;
@@ -8,21 +8,17 @@ exports.followAccount = async (req, res) => {
     const check = await Follows.checkFollower(userId, follower_id);
     if (check == null) {
       const user = await Follows.follow(userId, follower_id);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "followed successfully.",
-          data: user,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "followed successfully.",
+        data: user,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "already following this account",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "already following this account",
+        data: null,
+      });
     }
   } catch (error) {
     res
@@ -37,13 +33,11 @@ exports.unfollowAccount = async (req, res) => {
 
   try {
     const user = await Follows.unfollow(userId, follower_id);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "unfollowed successfully.",
-        data: user,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "unfollowed successfully.",
+      data: user,
+    });
   } catch (error) {
     res
       .status(500)
@@ -56,13 +50,11 @@ exports.getFollowerList = async (req, res) => {
 
   try {
     const skill = await Follows.getFollowers(userId);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Followers retrieved successfully.",
-        data: skill,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Followers retrieved successfully.",
+      data: skill,
+    });
   } catch (error) {
     res
       .status(500)
@@ -75,13 +67,11 @@ exports.getFollowingList = async (req, res) => {
 
   try {
     const skill = await Follows.getFollowings(userId);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Followings retrieved successfully.",
-        data: skill,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Followings retrieved successfully.",
+      data: skill,
+    });
   } catch (error) {
     res
       .status(500)
