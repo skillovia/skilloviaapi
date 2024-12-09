@@ -2,11 +2,12 @@ const express = require("express");
 const {
   createSkill,
   updateSkill,
-  deleteSkill,
+
   retrievePublishedSkill,
   searchSkillsByName,
   searchSkillsByCreatorName,
   searchSkillsBySparktoken,
+  deleteSkill,
 } = require("../controllers/skillController");
 const router = express.Router();
 const verify = require("../middlewares/verifyToken");
