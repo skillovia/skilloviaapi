@@ -1,8 +1,8 @@
-CREATE TABLE suggest_skills (
+CREATE TABLE account (
   id SERIAL PRIMARY KEY,
   user_id SERIAL,
-  name TEXT NOT NULL,
-  approval_status ENUM('pending', 'rejected', 'accepted') NOT NULL DEFAULT 'pending',
+  spark_token_balance INTEGER,
+  cash_balance MONEY,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

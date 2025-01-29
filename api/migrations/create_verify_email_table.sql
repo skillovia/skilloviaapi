@@ -1,7 +1,7 @@
-CREATE TABLE follows (
+CREATE TABLE verifyemail (
   id SERIAL PRIMARY KEY,
-  following_id SERIAL,
-  follower_id SERIAL,
+  email VARCHAR(255),
+  token VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

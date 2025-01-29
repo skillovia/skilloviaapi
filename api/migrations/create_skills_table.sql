@@ -6,6 +6,11 @@ CREATE TABLE skills (
   hourly_rate VARCHAR(10),
   spark_token VARCHAR(10),
   description TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  approval_status ENUM('draft', 'rejected', 'published') NOT NULL DEFAULT 'draft',
+  thumbnail01 VARCHAR(255),
+  thumbnail02 VARCHAR(255),
+  thumbnail03 VARCHAR(255),
+  thumbnail04 VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
