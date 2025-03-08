@@ -14,6 +14,8 @@ const suggestskillRoutes = require('./routes/suggestskillRoutes');
 const followRoutes = require('./routes/followRoutes');
 const settingsRoute = require('./routes/settingsRoute');
 const messageRoute = require('./routes/messageRoute');
+const adminRoutes = require('./routes/adminRoutes');
+const bookingsRoutes = require('./routes/bookingsRoutes');
 const chatSocketHandler = require('./sockets/chat');
 
 require('./passport');
@@ -24,7 +26,10 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:19006',
-  'https://skilloviaweb.vercel.app'
+  'http://localhost:5172',
+  'https://skilloviaweb.vercel.app',
+  'https://skilloviaadmin.vercel.app',
+  'https://www.skilloviaadmin.vercel.app'
 ];
 
 app.use(
@@ -68,6 +73,8 @@ app.use('/api/suggestedskills', suggestskillRoutes);
 app.use('/api/follows', followRoutes);
 app.use('/api/settings', settingsRoute);
 app.use('/api/message', messageRoute);
+app.use('/api/admin', adminRoutes);
+app.use('/api/bookings', bookingsRoutes);
 
 // Server
 const PORT = process.env.PORT || 3000;
