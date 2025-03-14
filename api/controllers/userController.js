@@ -13,13 +13,11 @@ exports.updateUser = async (req, res) => {
 
   try {
     const updatedUser = await User.update(userId, updates);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "User updated successfully.",
-        data: updatedUser,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "User updated successfully.",
+      data: updatedUser,
+    });
   } catch (error) {
     res
       .status(500)
@@ -36,20 +34,16 @@ exports.changeNotificationType = async (req, res) => {
       userId,
       notification_type
     );
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Notification type updated successfully.",
-        data: updatedNotification,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Notification type updated successfully.",
+      data: updatedNotification,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to update notification type.",
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update notification type.",
+    });
   }
 };
 
@@ -59,13 +53,11 @@ exports.changeAppearanceMode = async (req, res) => {
 
   try {
     const mode = await User.changeAppearanceMode(userId, appearance_mode);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Appearance mode updated successfully.",
-        data: mode,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Appearance mode updated successfully.",
+      data: mode,
+    });
   } catch (error) {
     res
       .status(500)
@@ -73,6 +65,102 @@ exports.changeAppearanceMode = async (req, res) => {
   }
 };
 
+// exports.getProfileByUserId = async (req, res) => {
+//   const userId = parseInt(req.params.id);
+
+//   try {
+//     const data = await User.getProfileByUserId(userId);
+
+//     if (data.length === 0) {
+//       return res
+//         .status(404)
+//         .json({
+//           status: "error",
+//           message: "User profile not found.",
+//           data: data,
+//         });
+//     }
+
+//     const {
+//       id,
+//       phone,
+//       email,
+//       firstname,
+//       lastname,
+//       gender,
+//       notification_type,
+//       appearance_mode,
+//       photourl,
+//       bio,
+//       spark_token_balance,
+//       cash_balance,
+//       total_followers,
+//       total_following,
+//       location,
+//       street,
+//       zip_code,
+//       created_at,
+//       updated_at,
+//       referral_code,
+//       website,
+//     } = data[0];
+
+//     // Map skills to an array
+//     const skills = data[0].skills.map((item) => ({
+//       skill_id: item.skill_id,
+//       description: item.description,
+//       skill_type: item.skill_type,
+//       experience_level: item.experience_level,
+//       hourly_rate: item.hourly_rate,
+//       thumbnail01: item.thumbnail01,
+//       thumbnail02: item.thumbnail02,
+//       thumbnail03: item.thumbnail03,
+//       thumbnail04: item.thumbnail04,
+//     }));
+
+//     const userProfile = {
+//       id,
+//       phone,
+//       email,
+//       firstname,
+//       lastname,
+//       gender,
+//       notification_type,
+//       appearance_mode,
+//       photourl,
+//       bio,
+//       spark_token_balance,
+//       cash_balance,
+//       total_followers,
+//       total_following,
+//       location,
+//       street,
+//       zip_code,
+//       referral_code,
+//       website,
+//       created_at,
+//       updated_at,
+//       skills: skills,
+//     };
+
+//     res
+//       .status(200)
+//       .json({
+//         status: "success",
+//         message: "User profile retrieved successfully.",
+//         data: userProfile,
+//       });
+//   } catch (error) {
+//     console.error("Error in getProfileByUserId:", error);
+//     res
+//       .status(500)
+//       .json({
+//         status: "error",
+//         message: "Failed to retrieve profile.",
+//         error: error.message,
+//       });
+//   }
+// };
 exports.getProfileByUserId = async (req, res) => {
   const userId = parseInt(req.params.id);
 
@@ -80,13 +168,11 @@ exports.getProfileByUserId = async (req, res) => {
     const data = await User.getProfileByUserId(userId);
 
     if (data.length === 0) {
-      return res
-        .status(404)
-        .json({
-          status: "error",
-          message: "User profile not found.",
-          data: data,
-        });
+      return res.status(404).json({
+        status: "error",
+        message: "User profile not found.",
+        data: data,
+      });
     }
 
     const {
@@ -151,22 +237,18 @@ exports.getProfileByUserId = async (req, res) => {
       skills: skills,
     };
 
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "User profile retrieved successfully.",
-        data: userProfile,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "User profile retrieved successfully.",
+      data: userProfile,
+    });
   } catch (error) {
     console.error("Error in getProfileByUserId:", error);
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve profile.",
-        error: error.message,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve profile.",
+      error: error.message,
+    });
   }
 };
 
@@ -177,13 +259,11 @@ exports.getBasiceProfileByUserId = async (req, res) => {
     const data = await User.getProfileByUserId(userId);
 
     if (data.length === 0) {
-      return res
-        .status(404)
-        .json({
-          status: "error",
-          message: "User profile not found.",
-          data: data,
-        });
+      return res.status(404).json({
+        status: "error",
+        message: "User profile not found.",
+        data: data,
+      });
     }
 
     const {
@@ -240,13 +320,11 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       skills: skills,
     };
 
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "User profile retrieved successfully.",
-        data: userProfile,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "User profile retrieved successfully.",
+      data: userProfile,
+    });
   } catch (error) {
     res
       .status(500)
@@ -261,22 +339,18 @@ exports.getBasiceProfileByUserName = async (req, res) => {
     const data = await User.getProfileByUserName(name);
 
     if (data.length === 0) {
-      return res
-        .status(404)
-        .json({
-          status: "error",
-          message: "User profile not found.",
-          data: data,
-        });
-    }
-
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "User profile retrieved successfully.",
+      return res.status(404).json({
+        status: "error",
+        message: "User profile not found.",
         data: data,
       });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "User profile retrieved successfully.",
+      data: data,
+    });
   } catch (error) {
     res
       .status(500)
@@ -294,13 +368,11 @@ exports.profilePhotoUpload = async (req, res) => {
 
     try {
       const mode = await User.changeAvatar(userId, file);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Profile photo updated successfully",
-          data: mode,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Profile photo updated successfully",
+        data: mode,
+      });
     } catch (error) {
       res
         .status(500)
@@ -324,13 +396,11 @@ exports.profilePhotoUploadS3 = async (req, res) => {
 
     try {
       const mode = await User.changeAvatar(userId, filePath);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Profile photo updated successfully",
-          data: mode,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Profile photo updated successfully",
+        data: mode,
+      });
     } catch (error) {
       res
         .status(500)
@@ -350,13 +420,11 @@ exports.updateBio = async (req, res) => {
 
   try {
     const mode = await User.updateBio(userId, req.body);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Bio updated successfully",
-        data: mode,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Bio updated successfully",
+      data: mode,
+    });
   } catch (error) {
     res.status(500).json({ status: "error", message: "Failed to update bio" });
   }
@@ -384,13 +452,11 @@ exports.changePassword = async (req, res) => {
         : null;
       const data = await User.resetPassword(userId, hashedPassword);
 
-      res
-        .status(201)
-        .json({
-          status: "success",
-          message: "Password reset was successful",
-          data: data,
-        });
+      res.status(201).json({
+        status: "success",
+        message: "Password reset was successful",
+        data: data,
+      });
     } catch (error) {
       res
         .status(500)
@@ -426,21 +492,17 @@ exports.nearByUsers = async (req, res) => {
     );
 
     if (users && users.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Nearby users retrieved successful",
-          data: users,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Nearby users retrieved successful",
+        data: users,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No nearby user found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No nearby user found",
+        data: null,
+      });
     }
   } catch (error) {
     res
@@ -464,21 +526,17 @@ exports.nearByUsersByAddress = async (req, res) => {
   try {
     const users = await User.findNearbyUsersByAddress(address);
     if (users && users.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Nearby users retrieved successful",
-          data: users,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Nearby users retrieved successful",
+        data: users,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No nearby user found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No nearby user found",
+        data: null,
+      });
     }
   } catch (error) {
     res
@@ -493,13 +551,11 @@ exports.getAllusers = async (req, res) => {
   try {
     const users = await User.getAllusers();
     if (users && users.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "users retrieved successful",
-          data: users,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "users retrieved successful",
+        data: users,
+      });
     } else {
       res
         .status(200)
@@ -519,13 +575,11 @@ exports.generateReferralCode = async (req, res) => {
 
   try {
     const users = await User.setReferralCode(userId, referralCode);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "user referral code updated successful",
-        data: users,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "user referral code updated successful",
+      data: users,
+    });
   } catch (error) {
     res
       .status(500)
@@ -539,13 +593,11 @@ exports.getReferredUsers = async (req, res) => {
   try {
     const users = await User.getUsersByReferralCode(code);
     if (users && users.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "users retrieved successful",
-          data: users,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "users retrieved successful",
+        data: users,
+      });
     } else {
       res
         .status(200)
@@ -564,13 +616,11 @@ exports.getUserNotifications = async (req, res) => {
   try {
     const noti = await User.getUserNotifications(userId);
     if (noti && noti.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Notifications successful",
-          data: noti,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Notifications successful",
+        data: noti,
+      });
     } else {
       res
         .status(200)
@@ -596,31 +646,25 @@ exports.createStripeAccount = async (req, res) => {
 
         if (account) {
           const user = await User.createStripeAccount(userId, account.id);
-          res
-            .status(201)
-            .json({
-              status: "success",
-              message: "Stripe account created successfully.",
-              data: user,
-            });
+          res.status(201).json({
+            status: "success",
+            message: "Stripe account created successfully.",
+            data: user,
+          });
         }
       } else {
-        res
-          .status(400)
-          .json({
-            status: "error",
-            message: "User already has a stripe account",
-            data: null,
-          });
+        res.status(400).json({
+          status: "error",
+          message: "User already has a stripe account",
+          data: null,
+        });
       }
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "error",
-          message: "Account creation failed.",
-          data: error.detail,
-        });
+      res.status(500).json({
+        status: "error",
+        message: "Account creation failed.",
+        data: error.detail,
+      });
     }
   }
 };
@@ -634,22 +678,18 @@ exports.generateStripeAccountLink = async (req, res) => {
       const account = await generateAccountLink(stripeAccountId);
 
       if (account) {
-        res
-          .status(200)
-          .json({
-            status: "success",
-            message: "Onboarding link generated successfully",
-            data: account,
-          });
+        res.status(200).json({
+          status: "success",
+          message: "Onboarding link generated successfully",
+          data: account,
+        });
       }
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "error",
-          message: "Failed to generate onboarding link",
-          data: error.detail,
-        });
+      res.status(500).json({
+        status: "error",
+        message: "Failed to generate onboarding link",
+        data: error.detail,
+      });
     }
   } else {
     res
@@ -677,32 +717,25 @@ exports.processSplitPayment = async (req, res) => {
       );
 
       if (paymentIntent) {
-        res
-          .status(200)
-          .json({
-            status: "success",
-            message: "Payment Intent Created Successfully",
-            data: paymentIntent,
-          });
+        res.status(200).json({
+          status: "success",
+          message: "Payment Intent Created Successfully",
+          data: paymentIntent,
+        });
       }
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "error",
-          message: "Failed to generate Payment Intent",
-          data: error.detail,
-        });
+      res.status(500).json({
+        status: "error",
+        message: "Failed to generate Payment Intent",
+        data: error.detail,
+      });
     }
   } else {
-    res
-      .status(400)
-      .json({
-        status: "error",
-        message:
-          "customerEmail, amount, currency, stripeAccountId are required",
-        data: null,
-      });
+    res.status(400).json({
+      status: "error",
+      message: "customerEmail, amount, currency, stripeAccountId are required",
+      data: null,
+    });
   }
 };
 
@@ -717,13 +750,11 @@ exports.updateStripeAccount = async (req, res) => {
       detailsSubmitted,
       stripeAccountId
     );
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Stripe account updated successfully",
-        data: account,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Stripe account updated successfully",
+      data: account,
+    });
   } catch (error) {
     res
       .status(500)
@@ -736,13 +767,11 @@ exports.deleteStripeAccount = async (req, res) => {
 
   try {
     const mode = await User.deleteStripeAccount(id);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Account deleted successfully.",
-        data: mode,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Account deleted successfully.",
+      data: mode,
+    });
   } catch (error) {
     res
       .status(500)
@@ -758,30 +787,24 @@ exports.getUserStripeAccount = async (req, res) => {
       const check = await User.checkStripeAccountExist(userId);
 
       if (check != null) {
-        res
-          .status(200)
-          .json({
-            status: "success",
-            message: "Stripe account retrieved successfully.",
-            data: check,
-          });
+        res.status(200).json({
+          status: "success",
+          message: "Stripe account retrieved successfully.",
+          data: check,
+        });
       } else {
-        res
-          .status(400)
-          .json({
-            status: "error",
-            message: "No stripe account found for this user",
-            data: null,
-          });
+        res.status(400).json({
+          status: "error",
+          message: "No stripe account found for this user",
+          data: null,
+        });
       }
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "error",
-          message: "Account retrieval failed.",
-          data: error.detail,
-        });
+      res.status(500).json({
+        status: "error",
+        message: "Account retrieval failed.",
+        data: error.detail,
+      });
     }
   }
 };
