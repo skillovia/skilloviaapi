@@ -65,38 +65,82 @@ const Skill = require("../models/Skill");
 //     });
 //   }
 // };
+// exports.createSkill = async (req, res) => {
+//   console.log("📦 Full Request Body:", req.body);
+//   console.log("📸 Uploaded Files:", req.files);
+
+// const data = req.body
+// const userId = req.user.id;
+//   const { skill_type } = req.body; // Destructure AFTER checking it's defined
+
+//   if (!skill_type) {
+//     return res.status(400).json({
+//       status: "error",
+//       message: "Missing required fields: skill_type.",
+//     });
+//   }
+
+//   const fileUrls = req.files?.thumbnails
+//     ? req.files.thumbnails.map((file) => file.location)
+//     : [];
+
+//   try {
+//     const skill = await Skill.create({
+//       userId,
+//   data,
+//       thumbnails: fileUrls,
+//     });
+//     return res.status(201).json({
+//       status: "success",
+//       message: "Skill created successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to create skill.",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// const Skill = require("../models/Skill");
+
 exports.createSkill = async (req, res) => {
   console.log("📦 Full Request Body:", req.body);
   console.log("📸 Uploaded Files:", req.files);
 
-  if (!req.body || Object.keys(req.body).length === 0) {
-    return res.status(400).json({
-      status: "error",
-      message:
-        "Request body is missing! Make sure you're sending multipart/form-data.",
-    });
-  }
-
-  const { skill_type } = req.body; // Destructure AFTER checking it's defined
   const userId = req.user.id;
+  const data = { ...req.body }; // Ensure data contains all request body fields
 
-  if (!skill_type) {
+  // Validate required fields
+  if (!data.skill_type) {
     return res.status(400).json({
       status: "error",
       message: "Missing required fields: skill_type.",
     });
   }
 
-  const fileUrls = req.files?.thumbnails
-    ? req.files.thumbnails.map((file) => file.location)
+  // Extract up to 4 uploaded files
+  const filePaths = req.files?.thumbnails
+    ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
     : [];
 
+  // Assign file paths to individual fields
+  data.thumbnails = {
+    thumbnail01: filePaths[0] || null,
+    thumbnail02: filePaths[1] || null,
+    thumbnail03: filePaths[2] || null,
+    thumbnail04: filePaths[3] || null,
+  };
+
   try {
+    // Ensure the data object includes userId before saving
     const skill = await Skill.create({
       userId,
-      skill_type,
-      thumbnails: fileUrls,
+      ...data, // Spread all form data
     });
+
     return res.status(201).json({
       status: "success",
       message: "Skill created successfully.",
