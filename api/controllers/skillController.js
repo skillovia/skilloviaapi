@@ -126,7 +126,6 @@ exports.createSkill = async (req, res) => {
     ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
     : [];
 
-  // Assign file paths to individual fields
   data.thumbnails = {
     thumbnail01: filePaths[0] || null,
     thumbnail02: filePaths[1] || null,
