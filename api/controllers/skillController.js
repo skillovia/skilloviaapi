@@ -111,7 +111,7 @@ exports.createSkill = async (req, res) => {
   console.log("📸 Uploaded Files:", req.files);
 
   const userId = req.user.id;
-  const data = { ...req.body }; // Ensure data contains all request body fields
+  const data = req.body;
 
   // Validate required fields
   if (!data.skill_type) {
