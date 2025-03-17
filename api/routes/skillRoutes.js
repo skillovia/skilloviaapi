@@ -59,7 +59,6 @@ const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: "skillovia", // Replace with your actual S3 bucket name
-    acl: "public-read", // Allow public access to uploaded files
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
