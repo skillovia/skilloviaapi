@@ -71,7 +71,24 @@ const upload = multer({
   }),
   limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB per file
 });
-router.post("/", verify, upload.array("thumbnails", 4), createSkill);
+// router.post("/", verify, upload.array("thumbnails", 4), createSkill);
+router.post(
+  "/",
+  verify,
+  upload.fields([{ name: "thumbnails", maxCount: 4 }]), // Handle file uploads
+  async (req, res) => {
+    console.log("Received body:", req.body); // Debugging
+    console.log("Received files:", req.files); // Debugging
+
+    try {
+      await createSkill(req, res);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
 router.put("/:id", verify, upload.array("thumbnails", 4), updateSkill);
 router.delete("/:id", verify, deleteSkill);
 router.put("/publish/:id", verify, updatePublishedStatus);

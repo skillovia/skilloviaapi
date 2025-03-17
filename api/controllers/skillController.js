@@ -35,14 +35,57 @@ const Skill = require("../models/Skill");
 //   }
 // };
 
+// exports.createSkill = async (req, res) => {
+//   const userId = req.user.id;
+//   const data = req.body;
+
+//   // Ensure filePaths is populated with up to 4 uploaded files
+//   const fileUrls = req.files.map((file) => file.location).slice(0, 4);
+
+//   // Assign file URLs to respective columns
+//   data.thumbnails = {
+//     thumbnail01: fileUrls[0] || null,
+//     thumbnail02: fileUrls[1] || null,
+//     thumbnail03: fileUrls[2] || null,
+//     thumbnail04: fileUrls[3] || null,
+//   };
+
+//   try {
+//     const skill = await Skill.create({ userId, ...data });
+//     res.status(200).json({
+//       status: "success",
+//       message: "Skill created successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to create skill.",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.createSkill = async (req, res) => {
+  console.log("Request body:", req.body); // Debugging
+  console.log("Uploaded files:", req.files); // Debugging
+
   const userId = req.user.id;
   const data = req.body;
 
-  // Ensure filePaths is populated with up to 4 uploaded files
-  const fileUrls = req.files.map((file) => file.location).slice(0, 4);
+  // Validate text fields
+  if (!data || Object.keys(data).length === 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "No form data received.",
+    });
+  }
 
-  // Assign file URLs to respective columns
+  // Extract image URLs from S3 upload
+  const fileUrls = (req.files?.thumbnails || [])
+    .map((file) => file.location)
+    .slice(0, 4);
+
+  // Assign image URLs
   data.thumbnails = {
     thumbnail01: fileUrls[0] || null,
     thumbnail02: fileUrls[1] || null,
@@ -52,7 +95,7 @@ exports.createSkill = async (req, res) => {
 
   try {
     const skill = await Skill.create({ userId, ...data });
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       message: "Skill created successfully.",
       data: skill,
@@ -117,21 +160,17 @@ exports.updatePublishedStatus = async (req, res) => {
 
   try {
     const skill = await Skill.updatePublishedStatus(skillId, status);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Skill published successfully.",
-        data: skill,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Skill published successfully.",
+      data: skill,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to update skill.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update skill.",
+      data: error,
+    });
   }
 };
 
@@ -141,21 +180,17 @@ exports.deleteSkill = async (req, res) => {
 
   try {
     const skill = await Skill.delete(userId, skillId);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Skill deleted successfully.",
-        data: skill,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Skill deleted successfully.",
+      data: skill,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to delete skill.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to delete skill.",
+      data: error,
+    });
   }
 };
 
@@ -165,30 +200,24 @@ exports.retrievePublishedSkill = async (req, res) => {
   try {
     const skill = await Skill.retrievePublishedSkill(status);
     if (skill != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "published skills retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "published skills retrieved successfully.",
+        data: skill,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No published record found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No published record found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -199,26 +228,22 @@ exports.retrieveUserSkill = async (req, res) => {
   try {
     const skill = await Skill.retrieveUserSkill(userId);
     if (skill != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "skills retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "skills retrieved successfully.",
+        data: skill,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -228,26 +253,22 @@ exports.searchSkillsByName = async (req, res) => {
   try {
     const skill = await Skill.searchSkillsByName(searchTerm);
     if (skill && skill.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Search result retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Search result retrieved successfully.",
+        data: skill,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -257,26 +278,22 @@ exports.searchUsersBySkillType = async (req, res) => {
   try {
     const skill = await Skill.searchUsersBySkillType(searchTerm);
     if (skill && skill.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Search result retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Search result retrieved successfully.",
+        data: skill,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -286,26 +303,22 @@ exports.searchSkillsByCreatorName = async (req, res) => {
   try {
     const skill = await Skill.searchSkillsByCreatorName(searchTerm);
     if (skill && skill.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Search result retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Search result retrieved successfully.",
+        data: skill,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -315,26 +328,22 @@ exports.searchSkillsBySparktoken = async (req, res) => {
   try {
     const skill = await Skill.searchSkillsBySparktoken(searchTerm);
     if (skill && skill.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Search result retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Search result retrieved successfully.",
+        data: skill,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -354,21 +363,17 @@ exports.deleteSkillPhoto = async (req, res) => {
     }
 
     const skill = await Skill.deletePhoto(key, userId, skillId);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Skill photo deleted successfully.",
-        data: skill,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Skill photo deleted successfully.",
+      data: skill,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to delete skill photo.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to delete skill photo.",
+      data: error,
+    });
   }
 };
 
@@ -379,26 +384,22 @@ exports.searchSkillsByType = async (req, res) => {
     const skill = await Skill.searchSkillsByType(searchTerm);
 
     if (skill && skill.length > 0) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Search result retrieved successfully.",
-          data: skill,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Search result retrieved successfully.",
+        data: skill,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
 
@@ -409,25 +410,21 @@ exports.getSkillCategory = async (req, res) => {
   try {
     const data = await Skill.getSkillCategory(status);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "skills retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "skills retrieved successfully.",
+        data: data,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No skill found", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve skills",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve skills",
+      data: error,
+    });
   }
 };
