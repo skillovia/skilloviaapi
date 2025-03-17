@@ -358,31 +358,62 @@ exports.getBasiceProfileByUserName = async (req, res) => {
   }
 };
 
+// exports.profilePhotoUpload = async (req, res) => {
+//   const userId = req.user.id;
+
+//   if (req.filePaths != null) {
+//     const filePath = req.filePaths;
+//     //console.log("PTH ", filePath)
+//     const file = filePath.slice(15);
+
+//     try {
+//       const mode = await User.changeAvatar(userId, file);
+//       res.status(200).json({
+//         status: "success",
+//         message: "Profile photo updated successfully",
+//         data: mode,
+//       });
+//     } catch (error) {
+//       res
+//         .status(500)
+//         .json({ status: "error", message: "Failed to upload photo" });
+//     }
+//   } else {
+//     res.status(400).send({
+//       status: "error",
+//       message: "No image found",
+//       data: null,
+//     });
+//   }
+// };
 exports.profilePhotoUpload = async (req, res) => {
-  const userId = req.user.id;
+  try {
+    const userId = req.user.id;
 
-  if (req.filePaths != null) {
-    const filePath = req.filePaths;
-    //console.log("PTH ", filePath)
-    const file = filePath.slice(15);
-
-    try {
-      const mode = await User.changeAvatar(userId, file);
-      res.status(200).json({
-        status: "success",
-        message: "Profile photo updated successfully",
-        data: mode,
+    if (!req.file) {
+      return res.status(400).json({
+        status: "error",
+        message: "No image found",
+        data: null,
       });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ status: "error", message: "Failed to upload photo" });
     }
-  } else {
-    res.status(400).send({
+
+    const fileUrl = req.file.location; // S3 URL
+
+    // Store file URL in the database (Assuming `changeAvatar` updates the DB)
+    const mode = await User.changeAvatar(userId, fileUrl);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Profile photo updated successfully",
+      data: mode,
+    });
+  } catch (error) {
+    console.error("Upload Error:", error);
+    return res.status(500).json({
       status: "error",
-      message: "No image found",
-      data: null,
+      message: "Failed to upload photo",
+      error: error.message,
     });
   }
 };

@@ -85,5 +85,5 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/bookings", bookingsRoutes);
 
 // Server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
