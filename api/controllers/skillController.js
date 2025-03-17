@@ -70,12 +70,12 @@ exports.createSkill = async (req, res) => {
   console.log("Uploaded files:", req.files);
 
   const userId = req.user.id;
-  const data = req.body;
+  const data = req.body || {}; // Ensure data is not undefined
 
-  if (!data || Object.keys(data).length === 0) {
+  if (!data.skill_type) {
     return res.status(400).json({
       status: "error",
-      message: "No form data received.",
+      message: "Missing required fields: skill_type.",
     });
   }
 
