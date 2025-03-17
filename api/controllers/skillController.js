@@ -66,39 +66,44 @@ const Skill = require("../models/Skill");
 //   }
 // };
 exports.createSkill = async (req, res) => {
-  console.log("Request body:", req.body);
-  console.log("Uploaded files:", req.files);
+  console.log("📦 Full Request Body:", req.body);
+  console.log("📸 Uploaded Files:", req.files);
 
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({
+      status: "error",
+      message:
+        "Request body is missing! Make sure you're sending multipart/form-data.",
+    });
+  }
+
+  const { skill_type } = req.body; // Destructure AFTER checking it's defined
   const userId = req.user.id;
-  const data = req.body || {}; // Ensure data is not undefined
 
-  if (!data.skill_type) {
+  if (!skill_type) {
     return res.status(400).json({
       status: "error",
       message: "Missing required fields: skill_type.",
     });
   }
 
-  // Ensure req.files.thumbnails exists
-  const fileUrls = Array.isArray(req.files?.thumbnails)
+  const fileUrls = req.files?.thumbnails
     ? req.files.thumbnails.map((file) => file.location)
     : [];
-
-  data.thumbnails = fileUrls; // Store as an array
 
   try {
     const skill = await Skill.create({
       userId,
-      thumbnails: data.thumbnails,
-      ...data,
+      skill_type,
+      thumbnails: fileUrls,
     });
-    res.status(201).json({
+    return res.status(201).json({
       status: "success",
       message: "Skill created successfully.",
       data: skill,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       status: "error",
       message: "Failed to create skill.",
       error: error.message,
