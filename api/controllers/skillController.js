@@ -66,13 +66,12 @@ const Skill = require("../models/Skill");
 //   }
 // };
 exports.createSkill = async (req, res) => {
-  console.log("Request body:", req.body); // Debugging
-  console.log("Uploaded files:", req.files); // Debugging
+  console.log("Request body:", req.body);
+  console.log("Uploaded files:", req.files);
 
   const userId = req.user.id;
   const data = req.body;
 
-  // Validate text fields
   if (!data || Object.keys(data).length === 0) {
     return res.status(400).json({
       status: "error",
@@ -80,24 +79,19 @@ exports.createSkill = async (req, res) => {
     });
   }
 
-  // Extract image URLs from S3 upload
-  // const fileUrls = (req.files?.thumbnails || [])
-  //   .map((file) => file.location)
-  //   .slice(0, 4);
+  // Ensure req.files.thumbnails exists
   const fileUrls = Array.isArray(req.files?.thumbnails)
     ? req.files.thumbnails.map((file) => file.location)
     : [];
 
-  // Assign image URLs
-  data.thumbnails = {
-    thumbnail01: fileUrls[0] || null,
-    thumbnail02: fileUrls[1] || null,
-    thumbnail03: fileUrls[2] || null,
-    thumbnail04: fileUrls[3] || null,
-  };
+  data.thumbnails = fileUrls; // Store as an array
 
   try {
-    const skill = await Skill.create({ userId, ...data });
+    const skill = await Skill.create({
+      userId,
+      thumbnails: data.thumbnails,
+      ...data,
+    });
     res.status(201).json({
       status: "success",
       message: "Skill created successfully.",
