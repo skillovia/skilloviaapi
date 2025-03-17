@@ -138,7 +138,7 @@ exports.createSkill = async (req, res) => {
     // Ensure the data object includes userId before saving
     const skill = await Skill.create({
       userId,
-      ...data, // Spread all form data
+      data, // Spread all form data
     });
 
     return res.status(201).json({
