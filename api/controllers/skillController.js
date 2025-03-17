@@ -81,9 +81,12 @@ exports.createSkill = async (req, res) => {
   }
 
   // Extract image URLs from S3 upload
-  const fileUrls = (req.files?.thumbnails || [])
-    .map((file) => file.location)
-    .slice(0, 4);
+  // const fileUrls = (req.files?.thumbnails || [])
+  //   .map((file) => file.location)
+  //   .slice(0, 4);
+  const fileUrls = Array.isArray(req.files?.thumbnails)
+    ? req.files.thumbnails.map((file) => file.location)
+    : [];
 
   // Assign image URLs
   data.thumbnails = {
