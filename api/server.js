@@ -1,35 +1,35 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const session = require('express-session');
-const passport = require('passport');
-const http = require('http');
-const { Server } = require('socket.io');
+require("dotenv").config();
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const session = require("express-session");
+const passport = require("passport");
+const http = require("http");
+const { Server } = require("socket.io");
 
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const skillRoutes = require('./routes/skillRoutes');
-const suggestskillRoutes = require('./routes/suggestskillRoutes');
-const followRoutes = require('./routes/followRoutes');
-const settingsRoute = require('./routes/settingsRoute');
-const messageRoute = require('./routes/messageRoute');
-const adminRoutes = require('./routes/adminRoutes');
-const bookingsRoutes = require('./routes/bookingsRoutes');
-const chatSocketHandler = require('./sockets/chat');
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const skillRoutes = require("./routes/skillRoutes");
+const suggestskillRoutes = require("./routes/suggestskillRoutes");
+const followRoutes = require("./routes/followRoutes");
+const settingsRoute = require("./routes/settingsRoute");
+const messageRoute = require("./routes/messageRoute");
+const adminRoutes = require("./routes/adminRoutes");
+const bookingsRoutes = require("./routes/bookingsRoutes");
+const chatSocketHandler = require("./sockets/chat");
 
-require('./passport');
+require("./passport");
 
 const app = express();
 
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:19006',
-  'http://localhost:5172',
-  'https://skilloviaweb.vercel.app',
-  'https://skilloviaadmin.vercel.app',
-  'https://www.skilloviaadmin.vercel.app'
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:19006",
+  "http://localhost:5172",
+  "https://skilloviaweb.vercel.app",
+  "https://skilloviaadmin.vercel.app",
+  "https://www.skilloviaadmin.vercel.app",
 ];
 
 app.use(
@@ -39,14 +39,22 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true, // Allow cookies and credentials
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Origin",
+      "Accept",
+      "X-Requested-With",
+    ],
   })
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(bodyParser.json());
 app.use(
@@ -66,15 +74,15 @@ const io = new Server(server);
 chatSocketHandler(io);
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/skills', skillRoutes);
-app.use('/api/suggestedskills', suggestskillRoutes);
-app.use('/api/follows', followRoutes);
-app.use('/api/settings', settingsRoute);
-app.use('/api/message', messageRoute);
-app.use('/api/admin', adminRoutes);
-app.use('/api/bookings', bookingsRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/skills", skillRoutes);
+app.use("/api/suggestedskills", suggestskillRoutes);
+app.use("/api/follows", followRoutes);
+app.use("/api/settings", settingsRoute);
+app.use("/api/message", messageRoute);
+app.use("/api/admin", adminRoutes);
+app.use("/api/bookings", bookingsRoutes);
 
 // Server
 const PORT = process.env.PORT || 3000;
