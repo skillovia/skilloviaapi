@@ -51,7 +51,7 @@ class MailerConfig {
       const msg = {
         to: mailOptions.to,
         from: {
-          email: "noreply@yourdomain.com",
+          email: "skilloviaapp@gmail.com",
           name: "Skillovia",
         },
         subject: mailOptions.subject,
