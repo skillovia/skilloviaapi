@@ -326,16 +326,18 @@ class User {
   }
 
   static async updateBio(userId, data) {
-    const { bio, location, street, zip_code } = data;
+    const { bio, location, street, zip_code, lon, lat} = data
 
     const result = await pool.query(
       `UPDATE users 
       SET bio = COALESCE($1, bio),
           location = COALESCE($2, location),
           street = COALESCE($3, street),
-          zip_code = COALESCE($4, zip_code)
-      WHERE id = $5 RETURNING *`,
-      [bio, location, street, zip_code, userId]
+          zip_code = COALESCE($4, zip_code),
+          lon = COALESCE($5, lon),
+          lat = COALESCE($6, lat)
+      WHERE id = $7 RETURNING *`,
+      [bio, location, street, zip_code, lon, lat, userId]
     );
     return result.rows[0];
   }
