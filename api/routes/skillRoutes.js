@@ -22,6 +22,7 @@ const path = require("path");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const { S3Client } = require("@aws-sdk/client-s3");
+const upload = require("../middlewares/multerConfig"); // Multer configuration
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -55,31 +56,41 @@ const s3 = new S3Client({
 // const upload = multer({ storage: storage })
 
 // Configure Multer to Upload to S3
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: "skillovia", // Replace with your actual S3 bucket name
-    metadata: (req, file, cb) => {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-      const uniqueFilename = `uploads/skills/${Date.now()}-${
-        file.originalname
-      }`;
-      cb(null, uniqueFilename);
-    },
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB per file
-});
+// const upload = multer({
+//   storage: multerS3({
+//     s3: s3,
+//     bucket: "skillovia", // Replace with your actual S3 bucket name
+//     metadata: (req, file, cb) => {
+//       cb(null, { fieldName: file.fieldname });
+//     },
+//     key: (req, file, cb) => {
+//       const uniqueFilename = `uploads/skills/${Date.now()}-${
+//         file.originalname
+//       }`;
+//       cb(null, uniqueFilename);
+//     },
+//   }),
+//   limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB per file
+// });
 // router.post("/", verify, upload.array("thumbnails", 4), createSkill);
+// router.post(
+//   "/",
+//   verify,
+//   upload.fields([{ name: "thumbnails", maxCount: 4 }]), // Handle file uploads
+//   async (req, res) => {
+//     try {
+//       await createSkill(req, res);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ error: "Internal Server Error" });
+//     }
+//   }
+// );
 router.post(
   "/",
   verify,
   upload.fields([{ name: "thumbnails", maxCount: 4 }]), // Handle file uploads
   async (req, res) => {
-    console.log("Received body:", req.body); // Debugging
-    console.log("Received files:", req.files); // Debugging
-
     try {
       await createSkill(req, res);
     } catch (err) {
@@ -88,7 +99,6 @@ router.post(
     }
   }
 );
-
 router.put("/:id", verify, upload.array("thumbnails", 4), updateSkill);
 router.delete("/:id", verify, deleteSkill);
 router.put("/publish/:id", verify, updatePublishedStatus);

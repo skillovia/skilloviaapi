@@ -53,10 +53,11 @@ app.use(
     ],
   })
 );
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(bodyParser.json());
 app.use(
   session({
     secret: process.env.GOOGLE_CLIENT_SECRET,
@@ -73,7 +74,7 @@ const io = new Server(server);
 // Socket.IO
 chatSocketHandler(io);
 
-// Routes
+// Route
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/skills", skillRoutes);
