@@ -74,7 +74,7 @@ const io = new Server(server);
 // Socket.IO
 chatSocketHandler(io);
 
-// Route
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/skills", skillRoutes);
