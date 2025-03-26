@@ -44,6 +44,27 @@ class Notifications {
     );
     return result.rows;
   }
+
+  static async getFollowNotifications(userId) {
+    const result = await pool.query(
+      `SELECT * FROM notifications 
+       WHERE user_id = $1 AND title = 'New Follower' 
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+    return result.rows;
+  }
+
+  // Get all followee notifications for a specific user
+  static async getFolloweeNotifications(userId) {
+    const result = await pool.query(
+      `SELECT * FROM notifications 
+       WHERE user_id = $1 AND title = 'You Have a New Followee' 
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+    return result.rows;
+  }
 }
 
 module.exports = Notifications;

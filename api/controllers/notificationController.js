@@ -56,3 +56,43 @@ exports.markNotificationAsSeen = async (req, res) => {
     });
   }
 };
+
+exports.getFollowNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const followNotifications = await Notifications.getFollowNotifications(
+      userId
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: followNotifications,
+    });
+  } catch (error) {
+    console.error("Error fetching follow notifications:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch follow notifications",
+    });
+  }
+};
+
+exports.getFolloweeNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const followeeNotifications = await Notifications.getFolloweeNotifications(
+      userId
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: followeeNotifications,
+    });
+  } catch (error) {
+    console.error("Error fetching followee notifications:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch followee notifications",
+    });
+  }
+};
