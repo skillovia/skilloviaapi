@@ -73,13 +73,11 @@ exports.updateBookings = async (req, res) => {
 
   //try {
   const bookings = await Bookings.update(bookingsId, data, file);
-  res
-    .status(200)
-    .json({
-      status: "success",
-      message: "Bookings updated successfully.",
-      data: bookings,
-    });
+  res.status(200).json({
+    status: "success",
+    message: "Bookings updated successfully.",
+    data: bookings,
+  });
   /* } catch (error) {
         res.status(500).json({status: 'error', message: 'Failed to update booking.', data: error });
     } */
@@ -91,21 +89,17 @@ exports.rejectBookings = async (req, res) => {
 
   try {
     const data = await Bookings.changeStatus(bookingsId, status);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Bookings rejected successfully.",
-        data: data,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Bookings rejected successfully.",
+      data: data,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to update status.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update status.",
+      data: error,
+    });
   }
 };
 
@@ -115,21 +109,17 @@ exports.acceptBookings = async (req, res) => {
 
   try {
     const data = await Bookings.changeStatus(bookingsId, status);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Bookings accepted successfully.",
-        data: data,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Bookings accepted successfully.",
+      data: data,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to update status.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update status.",
+      data: error,
+    });
   }
 };
 
@@ -140,26 +130,22 @@ exports.getInwardBookingsByUserId = async (req, res) => {
   try {
     const data = await Bookings.getInwardBookingsByUserId(userId);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "User bookings retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "User bookings retrieved successfully.",
+        data: data,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No bookings found", data: [] });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve bookings",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve bookings",
+      data: error,
+    });
   }
 };
 
@@ -170,26 +156,22 @@ exports.getOutwardBookingsByUserId = async (req, res) => {
   try {
     const data = await Bookings.getOutwardBookingsByUserId(userId);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "User bookings retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "User bookings retrieved successfully.",
+        data: data,
+      });
     } else {
       res
         .status(200)
         .json({ status: "success", message: "No bookings found", data: [] });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve bookings",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve bookings",
+      data: error,
+    });
   }
 };
 
@@ -199,20 +181,16 @@ exports.removeBookings = async (req, res) => {
 
   try {
     const data = await Bookings.deleteBookings(userId, id);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Bookings deleted successfully.",
-        data: data,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Bookings deleted successfully.",
+      data: data,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to delete bookings.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to delete bookings.",
+      data: error,
+    });
   }
 };

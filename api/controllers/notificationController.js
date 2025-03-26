@@ -1,0 +1,58 @@
+const Notifications = require("../models/Notifications");
+
+exports.getNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const notifications = await Notifications.getAllNotifications(userId);
+
+    res.status(200).json({
+      status: "success",
+      data: notifications,
+    });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch notifications",
+    });
+  }
+};
+
+exports.getBookingNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const bookingNotifications = await Notifications.getBookingNotifications(
+      userId
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: bookingNotifications,
+    });
+  } catch (error) {
+    console.error("Error fetching booking notifications:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch booking notifications",
+    });
+  }
+};
+
+exports.markNotificationAsSeen = async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const updatedNotification = await Notifications.markAsSeen(notificationId);
+
+    res.status(200).json({
+      status: "success",
+      message: "Notification marked as seen",
+      data: updatedNotification,
+    });
+  } catch (error) {
+    console.error("Error marking notification as seen:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update notification status",
+    });
+  }
+};
