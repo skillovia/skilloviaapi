@@ -336,8 +336,9 @@ exports.getBasiceProfileByUserName = async (req, res) => {
   const name = req.params.name;
 
   try {
+    console.log("Searching for user:", name);
     const data = await User.getProfileByUserName(name);
-
+    console.log("User data:", data);
     if (data.length === 0) {
       return res.status(404).json({
         status: "error",
@@ -352,9 +353,12 @@ exports.getBasiceProfileByUserName = async (req, res) => {
       data: data,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ status: "error", message: "Failed to retrieve profile." });
+    console.error("Database error:", error.message, error.stack);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve profile.",
+      error: error.message,
+    });
   }
 };
 

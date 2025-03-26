@@ -274,11 +274,52 @@ class User {
     return result.rows;
   }
 
+  // static async getProfileByUserName(name) {
+  //   const result = await pool.query(
+  //     `
+  //       SELECT
+  //           users.*,
+
+  //           COALESCE(
+  //               JSON_AGG(
+  //                   JSON_BUILD_OBJECT(
+  //                       'skill_id', skills.id,
+  //                       'description', skills.description,
+  //                       'skill_type', skills.skill_type,
+  //                       'experience_level', skills.experience_level,
+  //                       'hourly_rate', skills.hourly_rate,
+  //                       'thumbnail01', skills.thumbnail01,
+  //                       'thumbnail02', skills.thumbnail02,
+  //                       'thumbnail03', skills.thumbnail03,
+  //                       'thumbnail04', skills.thumbnail04
+  //                   )
+  //               ) FILTER (WHERE skills.id IS NOT NULL),
+  //               '[]'
+  //           ) AS skills,
+
+  //           COALESCE(account.spark_token_balance, 0) AS spark_token_balance,
+  //           COALESCE(account.cash_balance, 0) AS cash_balance,
+
+  //           (SELECT COUNT(*) FROM follows WHERE follows.following_id = users.id) AS total_followers,
+  //           (SELECT COUNT(*) FROM follows WHERE follows.follower_id = users.id) AS total_following
+
+  //       FROM users
+  //       LEFT JOIN skills ON users.id = skills.user_id
+  //       LEFT JOIN account ON users.id = account.user_id
+  //       WHERE (users.firstname || ' ' || users.lastname) ILIKE $1
+
+  //       GROUP BY users.id, account.spark_token_balance, account.cash_balance;
+  //       `,
+  //     [`%${name}%`]
+  //   );
+  //   return result.rows;
+  // }
   static async getProfileByUserName(name) {
     const result = await pool.query(
       `
         SELECT 
-            users.*,
+            users.id, users.firstname, users.lastname, users.email, users.phone, 
+            users.bio, users.location, users.photourl, users.created_at, users.updated_at, 
 
             COALESCE(
                 JSON_AGG(
@@ -308,7 +349,9 @@ class User {
         LEFT JOIN account ON users.id = account.user_id
         WHERE (users.firstname || ' ' || users.lastname) ILIKE $1 
 
-        GROUP BY users.id, account.spark_token_balance, account.cash_balance;
+        GROUP BY users.id, users.firstname, users.lastname, users.email, users.phone, 
+                 users.bio, users.location, users.photourl, users.created_at, users.updated_at,
+                 account.spark_token_balance, account.cash_balance;
         `,
       [`%${name}%`]
     );
@@ -326,7 +369,7 @@ class User {
   }
 
   static async updateBio(userId, data) {
-    const { bio, location, street, zip_code, lon, lat} = data
+    const { bio, location, street, zip_code, lon, lat } = data;
 
     const result = await pool.query(
       `UPDATE users 
