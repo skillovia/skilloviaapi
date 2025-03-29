@@ -510,6 +510,7 @@ exports.nearByUsers = async (req, res) => {
   const userId = req.user.id;
   const lat = req.params.lat;
   const lon = req.params.lon;
+  const rad = req.params.radius ? req.params.radius : 5;
 
   if (!lat || !lon) {
     return res.status(400).send({
@@ -518,7 +519,7 @@ exports.nearByUsers = async (req, res) => {
       data: null,
     });
   }
-  const rad = 5;
+
   try {
     const users = await User.findNearbyUsers(
       parseFloat(lat),

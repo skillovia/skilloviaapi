@@ -109,7 +109,7 @@ router.put(
 router.put("/profile/update/bio", verify, updateBio);
 router.put("/change/password", verify, changePassword);
 router.get("/people/within/:address", verify, nearByUsersByAddress);
-router.get("/people/nearby/:lat/:lon", verify, nearByUsers);
+router.get("/people/nearby/:lat/:lon/:radius", verify, nearByUsers);
 router.get("/searchuser/:name", verify, getBasiceProfileByUserName);
 router.put("/generate/referralcode", verify, generateReferralCode);
 router.get("/get/myreferred/:code", verify, getReferredUsers);
