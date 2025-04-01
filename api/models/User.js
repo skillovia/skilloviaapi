@@ -453,7 +453,6 @@ class User {
     return result.rows[0];
   }
 
-
   static async findNearbyUsers(lat, lon, radius = 5) {
     const result = await pool.query(
       `SELECT id, firstname, lastname, lat, lon, email, phone, gender, photourl,
@@ -483,7 +482,6 @@ class User {
 
     return result.rows;
   }
-
 
   static async findNearbyUsersByAddress(address) {
     const result = await pool.query(

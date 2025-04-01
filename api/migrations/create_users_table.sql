@@ -1,6 +1,7 @@
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  google_id SERIAL
+  -- google_id SERIAL
+  google_id  VARCHAR(255)
   phone VARCHAR(15) UNIQUE NOT NULL,
   email VARCHAR(255),
   firstname VARCHAR(50),
