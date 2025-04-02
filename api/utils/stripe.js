@@ -141,9 +141,46 @@ const generateAccountLink = async (account) => {
 //     throw error;
 //   }
 // };
+// const processSplitPayment = async (
+//   customerEmail,
+//   amount,
+//   currency,
+//   connectedAccountId
+// ) => {
+//   try {
+//     // Debugging: Log the received amount before processing
+//     console.log("Received amount from frontend:", amount);
+
+//     // Ensure the amount is correctly interpreted as GBP (£)
+//     const amountInCents = Math.floor(amount * 100); // Convert GBP to pence (e.g., £9 → 900p)
+//     console.log("Converted amount to pence (smallest unit):", amountInCents);
+
+//     // Calculate platform fee (4% of the total amount)
+//     const platformFee = Math.floor(amountInCents * 0.04);
+//     console.log("Calculated platform fee (4%):", platformFee);
+
+//     // Create a Payment Intent with destination charge and application fee
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: amountInCents, // Total amount in pence
+//       currency: currency, // Ensure currency is GBP
+//       payment_method_types: ["card"],
+//       receipt_email: customerEmail,
+//       application_fee_amount: platformFee, // Platform fee in pence
+//       transfer_data: {
+//         destination: connectedAccountId, // Vendor's Stripe account ID
+//       },
+//     });
+
+//     console.log("✅ Payment Intent Created:", paymentIntent.id);
+//     return paymentIntent.client_secret;
+//   } catch (error) {
+//     console.error("❌ Error processing split payment:", error);
+//     throw error;
+//   }
+// };
 const processSplitPayment = async (
   customerEmail,
-  amount,
+  amount, // amount in GBP (e.g., 9 for £9)
   currency,
   connectedAccountId
 ) => {
@@ -151,8 +188,10 @@ const processSplitPayment = async (
     // Debugging: Log the received amount before processing
     console.log("Received amount from frontend:", amount);
 
-    // Ensure the amount is correctly interpreted as GBP (£)
-    const amountInCents = Math.floor(amount * 100); // Convert GBP to pence (e.g., £9 → 900p)
+    // If the currency is GBP, we need to convert to pence (100) only.
+    const amountInCents =
+      currency === "gbp" ? Math.floor(amount * 100) : amount;
+
     console.log("Converted amount to pence (smallest unit):", amountInCents);
 
     // Calculate platform fee (4% of the total amount)
@@ -161,7 +200,7 @@ const processSplitPayment = async (
 
     // Create a Payment Intent with destination charge and application fee
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountInCents, // Total amount in pence
+      amount: amountInCents, // Total amount in pence (e.g., £9 → 900p)
       currency: currency, // Ensure currency is GBP
       payment_method_types: ["card"],
       receipt_email: customerEmail,
