@@ -32,24 +32,24 @@ const createConnectedAccount = async (email) => {
 };
 
 const generateAccountLink = async (account) => {
-  // try {
-  //   const accountLink = await stripe.accountLinks.create({
-  //     account: account,
-  //     return_url: `https://skilloviaweb.vercel.app/success-pay/${account}`,
-  //     refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
-  //     type: "account_onboarding",
-  //   });
   try {
-    const baseUrl = process.env.BASE_URL || "https://skilloviaweb.vercel.app";
-
     const accountLink = await stripe.accountLinks.create({
       account: account,
-      return_url: `${baseUrl}/success-pay/${account}`,
-      refresh_url: `${baseUrl}/failure-pay/${account}`,
+      return_url: `https://skilloviaweb.vercel.app/success-pay/${account}`,
+      refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
       type: "account_onboarding",
     });
+    //   try {
+    //     const baseUrl = process.env.BASE_URL || "https://skilloviaweb.vercel.app";
 
-    console.log("Account Link:", accountLink);
+    //     const accountLink = await stripe.accountLinks.create({
+    //       account: account,
+    //       return_url: `${baseUrl}/success-pay/${account}`,
+    //       refresh_url: `${baseUrl}/failure-pay/${account}`,
+    //       type: "account_onboarding",
+    //     });
+
+    //     console.log("Account Link:", accountLink);
   } catch (error) {
     console.error(
       "An error occurred when calling the Stripe API to create an account link:",
