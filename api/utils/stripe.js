@@ -31,6 +31,33 @@ const createConnectedAccount = async (email) => {
   }
 };
 
+// const generateAccountLink = async (account) => {
+//   try {
+//     const accountLink = await stripe.accountLinks.create({
+//       account: account,
+//       return_url: `https://skilloviaweb.vercel.app/success-pay/${account}`,
+//       refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
+//       type: "account_onboarding",
+//     });
+//     //   try {
+//     //     const baseUrl = process.env.BASE_URL || "https://skilloviaweb.vercel.app";
+
+//     //     const accountLink = await stripe.accountLinks.create({
+//     //       account: account,
+//     //       return_url: `${baseUrl}/success-pay/${account}`,
+//     //       refresh_url: `${baseUrl}/failure-pay/${account}`,
+//     //       type: "account_onboarding",
+//     //     });
+
+//     //     console.log("Account Link:", accountLink);
+//   } catch (error) {
+//     console.error(
+//       "An error occurred when calling the Stripe API to create an account link:",
+//       error
+//     );
+//     throw error.message;
+//   }
+// };
 const generateAccountLink = async (account) => {
   try {
     const accountLink = await stripe.accountLinks.create({
@@ -39,26 +66,18 @@ const generateAccountLink = async (account) => {
       refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
       type: "account_onboarding",
     });
-    //   try {
-    //     const baseUrl = process.env.BASE_URL || "https://skilloviaweb.vercel.app";
 
-    //     const accountLink = await stripe.accountLinks.create({
-    //       account: account,
-    //       return_url: `${baseUrl}/success-pay/${account}`,
-    //       refresh_url: `${baseUrl}/failure-pay/${account}`,
-    //       type: "account_onboarding",
-    //     });
+    console.log("Generated Account Link:", accountLink);
 
-    //     console.log("Account Link:", accountLink);
+    return accountLink; // ✅ Ensure the function returns the account link
   } catch (error) {
     console.error(
       "An error occurred when calling the Stripe API to create an account link:",
       error
     );
-    throw error.message;
+    throw error; // ✅ Return the full error object instead of just `error.message`
   }
 };
-
 const processSplitPayment = async (
   customerEmail,
   amount,

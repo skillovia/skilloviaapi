@@ -705,8 +705,48 @@ exports.createStripeAccount = async (req, res) => {
   }
 };
 
+// exports.generateStripeAccountLink = async (req, res) => {
+//   console.log("Request Body:", req.body); // 👀 Debugging line
+
+//   res.setHeader("Access-Control-Allow-Origin", "*"); // ✅ Allow all origins (for testing)
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "GET, POST, PUT, DELETE, OPTIONS"
+//   );
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+//   const userId = req.user.id;
+//   const { stripeAccountId } = req.body;
+
+//   if (stripeAccountId != null) {
+//     try {
+//       const account = await generateAccountLink(stripeAccountId);
+
+//       if (account) {
+//         res.status(200).json({
+//           status: "success",
+//           message: "Onboarding link generated successfully",
+//           data: account,
+//         });
+//       }
+//     } catch (error) {
+//       res.status(500).json({
+//         status: "error",
+//         message: "Failed to generate onboarding link",
+//         data: error.detail,
+//       });
+//     }
+//   } else {
+//     res
+//       .status(400)
+//       .json({ status: "error", message: "Account is required", data: null });
+//   }
+// };
+
 exports.generateStripeAccountLink = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); // ✅ Allow all origins (for testing)
+  console.log("Request Body:", req.body); // ✅ Debugging line
+
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS"
@@ -718,7 +758,11 @@ exports.generateStripeAccountLink = async (req, res) => {
 
   if (stripeAccountId != null) {
     try {
+      console.log("Generating account link for:", stripeAccountId); // ✅ Debug before calling function
+
       const account = await generateAccountLink(stripeAccountId);
+
+      console.log("Account link generated:", account); // ✅ Debug after calling function
 
       if (account) {
         res.status(200).json({
@@ -728,10 +772,11 @@ exports.generateStripeAccountLink = async (req, res) => {
         });
       }
     } catch (error) {
+      console.error("Error generating account link:", error); // Log any errors
       res.status(500).json({
         status: "error",
         message: "Failed to generate onboarding link",
-        data: error.detail,
+        data: error.message,
       });
     }
   } else {
