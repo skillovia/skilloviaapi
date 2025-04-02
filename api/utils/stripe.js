@@ -3,21 +3,21 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const createConnectedAccount = async (email) => {
   try {
     const account = await stripe.accounts.create({
-      country: 'GB',
+      country: "GB",
       email: email,
-      business_type: 'individual',
+      business_type: "individual",
       capabilities: {
         transfers: { requested: true }, // Enable payouts
       },
       controller: {
         fees: {
-          payer: 'application',
+          payer: "application",
         },
         losses: {
-          payments: 'application',
+          payments: "application",
         },
         stripe_dashboard: {
-          type: 'express',
+          type: "express",
         },
       },
     });
@@ -27,42 +27,54 @@ const createConnectedAccount = async (email) => {
   } catch (error) {
     console.error("Error creating connected account:", error);
     //return false
-    throw error
+    throw error;
   }
 };
 
-
 const generateAccountLink = async (account) => {
+  // try {
+  //   const accountLink = await stripe.accountLinks.create({
+  //     account: account,
+  //     return_url: `https://skilloviaweb.vercel.app/success-pay/${account}`,
+  //     refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
+  //     type: "account_onboarding",
+  //   });
   try {
+    const baseUrl = process.env.BASE_URL || "https://skilloviaweb.vercel.app";
+
     const accountLink = await stripe.accountLinks.create({
       account: account,
-      return_url: `https://skilloviaweb.vercel.app/success-pay/${account}`,
-      refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
+      return_url: `${baseUrl}/success-pay/${account}`,
+      refresh_url: `${baseUrl}/failure-pay/${account}`,
       type: "account_onboarding",
     });
 
-    return accountLink;
+    console.log("Account Link:", accountLink);
   } catch (error) {
     console.error(
       "An error occurred when calling the Stripe API to create an account link:",
       error
     );
-    throw error.message
+    throw error.message;
   }
-}
+};
 
-
-const processSplitPayment = async (customerEmail, amount, currency, connectedAccountId) => {
+const processSplitPayment = async (
+  customerEmail,
+  amount,
+  currency,
+  connectedAccountId
+) => {
   try {
     // Calculate platform fee (4% of the total amount)
     const platformFee = Math.floor(amount * 0.04 * 100); // Convert to cents
-    const totalAmount = (amount * 100) + platformFee
+    const totalAmount = amount * 100 + platformFee;
 
     // Create a Payment Intent with destination charge and application fee
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: currency,
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       receipt_email: customerEmail,
       application_fee_amount: platformFee,
       transfer_data: {
@@ -70,17 +82,15 @@ const processSplitPayment = async (customerEmail, amount, currency, connectedAcc
       },
     });
 
-    console.log('Payment Intent Created:', paymentIntent.id);
+    console.log("Payment Intent Created:", paymentIntent.id);
     return paymentIntent.client_secret;
   } catch (error) {
-    console.error('Error processing split payment:', error);
+    console.error("Error processing split payment:", error);
     throw error;
   }
 };
 
-
-
-module.exports = { 
+module.exports = {
   createConnectedAccount,
   generateAccountLink,
   processSplitPayment,

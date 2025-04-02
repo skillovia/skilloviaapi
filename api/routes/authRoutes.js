@@ -77,7 +77,7 @@ router.get(
 
     const token = req.user.token;
     res.redirect(
-      `https://skilloviaweb.vercel.app/explore?accessToken=${token}&refreshToken=${token}`
+      `http://skilloviaweb.vercel.app/explore?accessToken=${token}&refreshToken=${token}`
     );
   }
 );
