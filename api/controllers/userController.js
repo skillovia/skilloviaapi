@@ -706,6 +706,13 @@ exports.createStripeAccount = async (req, res) => {
 };
 
 exports.generateStripeAccountLink = async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // ✅ Allow all origins (for testing)
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
   const userId = req.user.id;
   const { stripeAccountId } = req.body;
 
