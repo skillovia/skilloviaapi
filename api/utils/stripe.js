@@ -109,6 +109,38 @@ const generateAccountLink = async (account) => {
 //   }
 // };
 
+// const processSplitPayment = async (
+//   customerEmail,
+//   amount,
+//   currency,
+//   connectedAccountId
+// ) => {
+//   try {
+//     // Convert amount to cents (Stripe uses smallest currency units)
+//     const amountInCents = Math.floor(amount * 100);
+
+//     // Calculate platform fee (4% of the total amount)
+//     const platformFee = Math.floor(amountInCents * 0.04);
+
+//     // Create a Payment Intent with destination charge and application fee
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: amountInCents, // ✅ This is the total amount paid by the customer
+//       currency: currency,
+//       payment_method_types: ["card"],
+//       receipt_email: customerEmail,
+//       application_fee_amount: platformFee, // ✅ This is the 4% fee taken by the platform
+//       transfer_data: {
+//         destination: connectedAccountId, // ✅ The vendor's Stripe account ID
+//       },
+//     });
+
+//     console.log("Payment Intent Created:", paymentIntent.id);
+//     return paymentIntent.client_secret;
+//   } catch (error) {
+//     console.error("Error processing split payment:", error);
+//     throw error;
+//   }
+// };
 const processSplitPayment = async (
   customerEmail,
   amount,
@@ -116,28 +148,33 @@ const processSplitPayment = async (
   connectedAccountId
 ) => {
   try {
-    // Convert amount to cents (Stripe uses smallest currency units)
-    const amountInCents = Math.floor(amount * 100);
+    // Debugging: Log the received amount before processing
+    console.log("Received amount from frontend:", amount);
+
+    // Ensure the amount is correctly interpreted as GBP (£)
+    const amountInCents = Math.floor(amount * 100); // Convert GBP to pence (e.g., £9 → 900p)
+    console.log("Converted amount to pence (smallest unit):", amountInCents);
 
     // Calculate platform fee (4% of the total amount)
     const platformFee = Math.floor(amountInCents * 0.04);
+    console.log("Calculated platform fee (4%):", platformFee);
 
     // Create a Payment Intent with destination charge and application fee
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountInCents, // ✅ This is the total amount paid by the customer
-      currency: currency,
+      amount: amountInCents, // Total amount in pence
+      currency: currency, // Ensure currency is GBP
       payment_method_types: ["card"],
       receipt_email: customerEmail,
-      application_fee_amount: platformFee, // ✅ This is the 4% fee taken by the platform
+      application_fee_amount: platformFee, // Platform fee in pence
       transfer_data: {
-        destination: connectedAccountId, // ✅ The vendor's Stripe account ID
+        destination: connectedAccountId, // Vendor's Stripe account ID
       },
     });
 
-    console.log("Payment Intent Created:", paymentIntent.id);
+    console.log("✅ Payment Intent Created:", paymentIntent.id);
     return paymentIntent.client_secret;
   } catch (error) {
-    console.error("Error processing split payment:", error);
+    console.error("❌ Error processing split payment:", error);
     throw error;
   }
 };
