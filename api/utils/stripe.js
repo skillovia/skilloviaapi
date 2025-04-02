@@ -78,6 +78,37 @@ const generateAccountLink = async (account) => {
     throw error; // ✅ Return the full error object instead of just `error.message`
   }
 };
+// const processSplitPayment = async (
+//   customerEmail,
+//   amount,
+//   currency,
+//   connectedAccountId
+// ) => {
+//   try {
+//     // Calculate platform fee (4% of the total amount)
+//     const platformFee = Math.floor(amount * 0.04 * 100); // Convert to cents
+//     const totalAmount = amount * 100 + platformFee;
+
+//     // Create a Payment Intent with destination charge and application fee
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: totalAmount,
+//       currency: currency,
+//       payment_method_types: ["card"],
+//       receipt_email: customerEmail,
+//       application_fee_amount: platformFee,
+//       transfer_data: {
+//         destination: connectedAccountId, // The vendor's Stripe account ID
+//       },
+//     });
+
+//     console.log("Payment Intent Created:", paymentIntent.id);
+//     return paymentIntent.client_secret;
+//   } catch (error) {
+//     console.error("Error processing split payment:", error);
+//     throw error;
+//   }
+// };
+
 const processSplitPayment = async (
   customerEmail,
   amount,
@@ -85,19 +116,21 @@ const processSplitPayment = async (
   connectedAccountId
 ) => {
   try {
+    // Convert amount to cents (Stripe uses smallest currency units)
+    const amountInCents = Math.floor(amount * 100);
+
     // Calculate platform fee (4% of the total amount)
-    const platformFee = Math.floor(amount * 0.04 * 100); // Convert to cents
-    const totalAmount = amount * 100 + platformFee;
+    const platformFee = Math.floor(amountInCents * 0.04);
 
     // Create a Payment Intent with destination charge and application fee
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmount,
+      amount: amountInCents, // ✅ This is the total amount paid by the customer
       currency: currency,
       payment_method_types: ["card"],
       receipt_email: customerEmail,
-      application_fee_amount: platformFee,
+      application_fee_amount: platformFee, // ✅ This is the 4% fee taken by the platform
       transfer_data: {
-        destination: connectedAccountId, // The vendor's Stripe account ID
+        destination: connectedAccountId, // ✅ The vendor's Stripe account ID
       },
     });
 
