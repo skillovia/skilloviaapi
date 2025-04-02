@@ -62,8 +62,8 @@ const generateAccountLink = async (account) => {
   try {
     const accountLink = await stripe.accountLinks.create({
       account: account,
-      return_url: `https://skilloviaweb.vercel.app/success-pay/${account}`,
-      refresh_url: `https://skilloviaweb.vercel.app/failure-pay/${account}`,
+      return_url: `https://skilloviaweb.vercel.app/success-pay`,
+      refresh_url: `https://skilloviaweb.vercel.app/failure-pay`,
       type: "account_onboarding",
     });
 
