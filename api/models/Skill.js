@@ -323,6 +323,16 @@ class Skill {
     );
     return result.rows;
   }
+  static async findAll() {
+    const result = await pool.query(`SELECT * FROM skills`);
+    return result.rows;
+  }
+  static async findOne(skillId) {
+    const result = await pool.query(`SELECT * FROM skills WHERE id = $1`, [
+      skillId,
+    ]);
+    return result.rows[0];
+  }
 
   static async getSkillCategory(status) {
     const result = await pool.query(

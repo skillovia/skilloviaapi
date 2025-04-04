@@ -1,4 +1,5 @@
 const Skill = require("../models/Skill");
+const pool = require("../config/db");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const {
@@ -336,36 +337,210 @@ exports.getBasiceProfileByUserId = async (req, res) => {
 };
 
 // Controller function to compare SparkTokens
+// exports.compareSparkTokens = async (req, res) => {
+//   const { userId, skillId } = req.body; // userId: ID of the logged-in user, skillId: the skill for payment
+
+//   try {
+//     // Fetch the user's data (including their SparkTokens)
+//     const user = await User.findById(userId);
+//     const skill = await Skill.findSkill(skillId);
+
+//     // Check if user and skill exist
+//     if (!user || !skill) {
+//       return res.status(404).json({ message: "User or skill not found" });
+//     }
+
+//     const userTokens = user.sparkTokens; // User's available SparkTokens
+//     const skillTokensRequired = skill.sparkTokensRequired; // Tokens required for this skill
+
+//     // Compare the tokens
+//     if (userTokens >= skillTokensRequired) {
+//       // If user has enough tokens
+//       return res
+//         .status(200)
+//         .json({ message: "Sufficient SparkTokens", canPay: true });
+//     } else {
+//       // If user does not have enough tokens
+//       return res
+//         .status(400)
+//         .json({ message: "Insufficient SparkTokens", canPay: false });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
+// exports.compareSparkTokens = async (req, res) => {
+//   const { userId, skillId } = req.body; // userId: ID of the logged-in user, skillId: the skill for payment
+
+//   try {
+//     // Log the incoming userId and skillId to verify
+//     console.log("Received userId:", userId, "and skillId:", skillId);
+
+//     // Fetch the user's data (including their SparkTokens)
+//     const user = await User.findById(userId); // Already correct
+//     const skill = await Skill.findSkill(skillId, userId); // ✅ Fixed
+
+//     // Log the user and skill objects to verify what is being fetched
+//     console.log("Fetched user data:", user);
+//     console.log("Fetched skill data:", skill);
+
+//     // Check if user and skill exist
+//     if (!user || !skill) {
+//       console.log("User or skill not found.");
+//       return res.status(404).json({ message: "User or skill not found" });
+//     }
+
+//     const userTokens = user.sparkTokens || 0; // User's available SparkTokens (if not defined, default to 0)
+//     const skillTokensRequired = skill.spark_token || 0; // Tokens required for this skill (ensure spark_token exists)
+
+//     // Log the tokens to verify they are being correctly retrieved
+//     console.log("User's available SparkTokens:", userTokens);
+//     console.log("Skill's required SparkTokens:", skillTokensRequired);
+
+//     // Ensure the user and skill both have tokens before proceeding
+//     if (skillTokensRequired === null || skillTokensRequired === undefined) {
+//       console.log("Skill does not have a valid spark_token.");
+//       return res
+//         .status(400)
+//         .json({ message: "Skill does not have a valid spark_token" });
+//     }
+
+//     if (userTokens === undefined) {
+//       console.log("User does not have SparkTokens.");
+//       return res
+//         .status(400)
+//         .json({ message: "User does not have SparkTokens" });
+//     }
+
+//     // Compare the tokens
+//     if (userTokens >= skillTokensRequired) {
+//       // If user has enough tokens
+//       console.log("User has sufficient SparkTokens.");
+//       return res
+//         .status(200)
+//         .json({ message: "Sufficient SparkTokens", canPay: true });
+//     } else {
+//       // If user does not have enough tokens
+//       console.log("User does not have sufficient SparkTokens.");
+//       return res
+//         .status(400)
+//         .json({ message: "Insufficient SparkTokens", canPay: false });
+//     }
+//   } catch (error) {
+//     console.error("Error occurred while comparing SparkTokens:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+// exports.compareSparkTokens = async (req, res) => {
+//   const { userId, skillId } = req.body;
+
+//   try {
+//     console.log("Received userId:", userId, "and skillId:", skillId);
+
+//     // Get the skill they want to "buy"
+//     const targetSkill = await Skill.findSkill(skillId, userId);
+//     if (!targetSkill) {
+//       return res.status(404).json({ message: "Skill not found" });
+//     }
+
+//     const requiredTokens = parseInt(targetSkill.spark_token) || 0;
+//     console.log("Skill's required SparkTokens:", requiredTokens);
+
+//     if (!requiredTokens || isNaN(requiredTokens)) {
+//       return res
+//         .status(400)
+//         .json({ message: "Invalid spark_token for target skill" });
+//     }
+
+//     // Get all of the user's skills (excluding the current skillId)
+//     const userSkills = await Skill.find({
+//       user_id: userId,
+//       _id: { $ne: skillId },
+//     });
+
+//     // Check if any of the user's skills have spark_token >= requiredTokens
+//     const hasSufficientSkill = userSkills.some((skill) => {
+//       const tokenValue = parseInt(skill.spark_token) || 0;
+//       return tokenValue >= requiredTokens;
+//     });
+
+//     if (hasSufficientSkill) {
+//       return res
+//         .status(200)
+//         .json({ message: "Sufficient SparkTokens", canPay: true });
+//     } else {
+//       return res
+//         .status(400)
+//         .json({ message: "Insufficient SparkTokens", canPay: false });
+//     }
+//   } catch (error) {
+//     console.error("Error occurred while comparing SparkTokens:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
 exports.compareSparkTokens = async (req, res) => {
-  const { userId, skillId } = req.body; // userId: ID of the logged-in user, skillId: the skill for payment
+  const userId = req.user.id; // securely from token (logged-in user's ID)
+  const { skillId, targetUserId } = req.body; // skillId and targetUserId passed in the request body
 
   try {
-    // Fetch the user's data (including their SparkTokens)
-    const user = await User.findById(userId);
-    const skill = await Skill.findById(skillId);
+    console.log(
+      "Checking SparkTokens for logged-in userId:",
+      userId,
+      "target skillId (owned by another user, targetUserId):",
+      skillId,
+      "targetUserId:",
+      targetUserId
+    );
 
-    // Check if user and skill exist
-    if (!user || !skill) {
-      return res.status(404).json({ message: "User or skill not found" });
+    // Step 1: Get the target skill owned by the target user (targetUserId)
+    const targetSkill = await Skill.findSkill(skillId, targetUserId); // Find skill with skillId for targetUserId
+
+    if (!targetSkill) {
+      return res
+        .status(404)
+        .json({ message: "Target skill not found for the other user" });
     }
 
-    const userTokens = user.sparkTokens; // User's available SparkTokens
-    const skillTokensRequired = skill.sparkTokensRequired; // Tokens required for this skill
+    // Step 2: Get the required tokens from the target skill (the other user's skill)
+    const requiredTokens = parseInt(targetSkill.spark_token);
+    if (!requiredTokens || isNaN(requiredTokens)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid spark_token in target skill" });
+    }
 
-    // Compare the tokens
-    if (userTokens >= skillTokensRequired) {
-      // If user has enough tokens
+    // Step 3: Get all the skills of the logged-in user
+    const allUserSkillsQuery = await pool.query(
+      "SELECT * FROM skills WHERE user_id = $1", // Get skills of logged-in user
+      [userId]
+    );
+    const userSkills = allUserSkillsQuery.rows;
+
+    if (!userSkills || userSkills.length === 0) {
+      return res.status(400).json({ message: "User has no skills" });
+    }
+
+    console.log("Logged-in user skills:", userSkills);
+
+    // Step 4: Check if the logged-in user has enough SparkTokens in any of their skills
+    const hasEnoughTokens = userSkills.some((skill) => {
+      const userToken = parseInt(skill.spark_token);
+      return !isNaN(userToken) && userToken >= requiredTokens;
+    });
+
+    if (hasEnoughTokens) {
       return res
         .status(200)
         .json({ message: "Sufficient SparkTokens", canPay: true });
     } else {
-      // If user does not have enough tokens
       return res
         .status(400)
         .json({ message: "Insufficient SparkTokens", canPay: false });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error comparing SparkTokens:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
