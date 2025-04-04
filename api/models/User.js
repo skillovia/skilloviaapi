@@ -226,6 +226,54 @@ class User {
   //   return result.rows;
   // }
 
+  // static async getProfileByUserId(id) {
+  //   const result = await pool.query(
+  //     `
+  //     SELECT
+  //         users.id, users.phone, users.email, users.firstname, users.lastname,
+  //         users.gender, users.notification_type, users.appearance_mode,
+  //         users.photourl, users.bio, users.location, users.street, users.zip_code,
+  //         users.created_at, users.updated_at, users.referral_code, users.website,
+
+  //         COALESCE(
+  //             JSON_AGG(
+  //                 JSON_BUILD_OBJECT(
+  //                     'skill_id', skills.id,
+  //                     'description', skills.description,
+  //                     'skill_type', skills.skill_type,
+  //                     'spark_token', skills.spark_token,
+  //                     'experience_level', skills.experience_level,
+  //                     'hourly_rate', skills.hourly_rate,
+  //                     'thumbnail01', skills.thumbnail01,
+  //                     'thumbnail02', skills.thumbnail02,
+  //                     'thumbnail03', skills.thumbnail03,
+  //                     'thumbnail04', skills.thumbnail04
+  //                 )
+  //             ) FILTER (WHERE skills.id IS NOT NULL),
+  //             '[]'
+  //         ) AS skills,
+
+  //         COALESCE(account.spark_token_balance, 0) AS spark_token_balance,
+  //         COALESCE(account.cash_balance, 0) AS cash_balance,
+
+  //         (SELECT COUNT(*) FROM follows WHERE follows.following_id = users.id) AS total_followers,
+  //         (SELECT COUNT(*) FROM follows WHERE follows.follower_id = users.id) AS total_following
+
+  //     FROM users
+  //     LEFT JOIN skills ON users.id = skills.user_id
+  //     LEFT JOIN account ON users.id = account.user_id
+  //     WHERE users.id = $1
+
+  //     GROUP BY users.id, users.phone, users.email, users.firstname, users.lastname,
+  //              users.gender, users.notification_type, users.appearance_mode,
+  //              users.photourl, users.bio, users.location, users.street, users.zip_code,
+  //              users.created_at, users.updated_at, users.referral_code, users.website,
+  //              account.spark_token_balance, account.cash_balance;
+  //     `,
+  //     [id]
+  //   );
+  //   return result.rows;
+  // }
   static async getProfileByUserId(id) {
     const result = await pool.query(
       `
@@ -241,7 +289,7 @@ class User {
                       'skill_id', skills.id,
                       'description', skills.description,
                       'skill_type', skills.skill_type,
-                      'spark_token', skills.spark_token,
+                      'spark_token', skills.spark_token,  -- Make sure spark_token is included here
                       'experience_level', skills.experience_level,
                       'hourly_rate', skills.hourly_rate,
                       'thumbnail01', skills.thumbnail01,
