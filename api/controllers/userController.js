@@ -283,6 +283,7 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       street,
       zip_code,
       referral_code,
+
       website,
     } = data[0];
 
@@ -291,6 +292,7 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       skill_id: item.skill_id,
       description: item.description,
       skill_type: item.skill_type,
+      spark_token: item.spark_token || 0,
       experience_level: item.experience_level,
       hourly_rate: item.hourly_rate,
       thumbnail01: item.thumbnail01,
@@ -317,6 +319,7 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       zip_code,
       referral_code,
       website,
+
       skills: skills,
     };
 
