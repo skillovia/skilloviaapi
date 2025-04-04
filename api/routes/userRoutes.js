@@ -21,6 +21,7 @@ const {
   processSplitPayment,
   updateStripeAccount,
   getUserStripeAccount,
+  compareSparkTokens,
 } = require("../controllers/userController");
 const router = express.Router();
 const verify = require("../middlewares/verifyToken");
@@ -104,6 +105,7 @@ router.put(
   upload.single("photo"),
   profilePhotoUpload
 );
+router.post("/compare-spark-tokens", verify, compareSparkTokens);
 
 //router.put('/profile/upload/aws', verify, uploads3.single('photo'), profilePhotoUploadS3);
 router.put("/profile/update/bio", verify, updateBio);

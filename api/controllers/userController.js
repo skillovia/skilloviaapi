@@ -335,6 +335,41 @@ exports.getBasiceProfileByUserId = async (req, res) => {
   }
 };
 
+// Controller function to compare SparkTokens
+exports.compareSparkTokens = async (req, res) => {
+  const { userId, skillId } = req.body; // userId: ID of the logged-in user, skillId: the skill for payment
+
+  try {
+    // Fetch the user's data (including their SparkTokens)
+    const user = await User.findById(userId);
+    const skill = await Skill.findById(skillId);
+
+    // Check if user and skill exist
+    if (!user || !skill) {
+      return res.status(404).json({ message: "User or skill not found" });
+    }
+
+    const userTokens = user.sparkTokens; // User's available SparkTokens
+    const skillTokensRequired = skill.sparkTokensRequired; // Tokens required for this skill
+
+    // Compare the tokens
+    if (userTokens >= skillTokensRequired) {
+      // If user has enough tokens
+      return res
+        .status(200)
+        .json({ message: "Sufficient SparkTokens", canPay: true });
+    } else {
+      // If user does not have enough tokens
+      return res
+        .status(400)
+        .json({ message: "Insufficient SparkTokens", canPay: false });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.getBasiceProfileByUserName = async (req, res) => {
   const name = req.params.name;
 
