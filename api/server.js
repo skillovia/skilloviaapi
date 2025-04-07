@@ -9,6 +9,7 @@ const { Server } = require("socket.io");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const skillRoutes = require("./routes/skillRoutes");
 const notificationRoute = require("./routes/notificationRoute");
 const suggestskillRoutes = require("./routes/suggestskillRoutes");
@@ -80,6 +81,7 @@ chatSocketHandler(io);
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/reviews", reviewRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/notifications", notificationRoute);
 app.use("/api/suggestedskills", suggestskillRoutes);
