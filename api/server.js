@@ -10,6 +10,7 @@ const { Server } = require("socket.io");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const disputeRoute = require("./routes/disputeRoute");
 const skillRoutes = require("./routes/skillRoutes");
 const notificationRoute = require("./routes/notificationRoute");
 const suggestskillRoutes = require("./routes/suggestskillRoutes");
@@ -88,6 +89,7 @@ app.use("/api/suggestedskills", suggestskillRoutes);
 app.use("/api/follows", followRoutes);
 app.use("/api/settings", settingsRoute);
 app.use("/api/message", messageRoute);
+app.use("/api/dispute", disputeRoute);
 app.use("/api/admin", adminRoutes);
 app.use("/api/bookings", bookingsRoutes);
 
