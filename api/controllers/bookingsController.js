@@ -30,6 +30,7 @@ const Bookings = require("../models/Bookings");
 exports.createBookings = async (req, res) => {
   const userId = req.user.id;
   const data = req.body;
+  data.status = data.status || "pending"; // This will default to 'pending' if no status is provided
 
   if (!data.title) {
     return res.status(400).json({
