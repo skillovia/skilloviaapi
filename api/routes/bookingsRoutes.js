@@ -79,6 +79,7 @@ router.put("/:id", verify, upload.single("file"), updateBookings);
 router.put("/reject/:id", verify, rejectBookings);
 router.put("/accept/:id", verify, acceptBookings);
 router.put("/in-progress/:id", verify, startBooking);
+router.put("/completed/:id", verify, completeBooking);
 router.get("/get/user/inward", verify, getInwardBookingsByUserId);
 router.get("/get/user/outward", verify, getOutwardBookingsByUserId);
 router.delete("/:id", verify, removeBookings);
