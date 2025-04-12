@@ -3,6 +3,8 @@ const {
   createBookings,
   updateBookings,
   rejectBookings,
+  startBooking,
+  completeBooking,
   acceptBookings,
   getInwardBookingsByUserId,
   getOutwardBookingsByUserId,
