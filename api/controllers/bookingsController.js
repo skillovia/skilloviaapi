@@ -123,6 +123,26 @@ exports.acceptBookings = async (req, res) => {
   }
 };
 
+exports.startBooking = async (req, res) => {
+  const status = "in-progress";
+  const bookingId = parseInt(req.params.id);
+
+  try {
+    const data = await Bookings.changeStatus(bookingId, status);
+    res.status(200).json({
+      status: "success",
+      message: "Booking started successfully.",
+      data: data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to start booking.",
+      data: error,
+    });
+  }
+};
+
 // get inward bookings
 exports.getInwardBookingsByUserId = async (req, res) => {
   const userId = req.user.id;

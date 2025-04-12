@@ -78,6 +78,7 @@ router.post("/", verify, upload.single("file"), async (req, res) => {
 router.put("/:id", verify, upload.single("file"), updateBookings);
 router.put("/reject/:id", verify, rejectBookings);
 router.put("/accept/:id", verify, acceptBookings);
+router.put("/in-progress/:id", verify, startBooking);
 router.get("/get/user/inward", verify, getInwardBookingsByUserId);
 router.get("/get/user/outward", verify, getOutwardBookingsByUserId);
 router.delete("/:id", verify, removeBookings);

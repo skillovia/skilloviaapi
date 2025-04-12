@@ -24,7 +24,7 @@ const chatSocketHandler = require("./sockets/chat");
 require("./passport");
 
 const app = express();
-
+// app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
