@@ -481,8 +481,6 @@ exports.getProfileByUserId = async (req, res) => {
 //   }
 // };
 
-const pool = require("../db"); // make sure you have access to your DB pool
-
 exports.getBasiceProfileByUserId = async (req, res) => {
   const userId = parseInt(req.params.id);
 
