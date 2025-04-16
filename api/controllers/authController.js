@@ -5,6 +5,8 @@ const twilioConfig = require("../config/twilio");
 const Notifications = require("../mail/notifications");
 const { getClientIp } = require("../middlewares/ipgetter");
 const { getCoordinatesFromIp } = require("../utils/geolocation");
+const createWalletForUser = require("../utils/createWalletUtils");
+// const { createWalletForUser } = require("./walletController");
 
 // handles user registration
 const registerUser = async (req, res) => {
@@ -15,10 +17,14 @@ const registerUser = async (req, res) => {
     const check = await User.checkUserExist(req.body.phone, req.body.email);
     if (check == null) {
       const user = await User.create(req.body);
+
+      const wallet = await createWalletForUser(user.id); // Pass user ID to create wallet
+
       res.status(201).json({
         status: "success",
         message: "User registered successfully.",
         data: user,
+        wallet,
       });
 
       /* if (user != null) {
