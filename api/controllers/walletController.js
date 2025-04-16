@@ -173,7 +173,7 @@ exports.getWalletBalance = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "SELECT balance, currency FROM wallet WHERE user_id = $1",
+      "SELECT balance,spark_tokens,  currency FROM wallet WHERE user_id = $1",
       [userId]
     );
 
