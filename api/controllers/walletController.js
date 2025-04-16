@@ -20,7 +20,7 @@ exports.createWalletForUser = async (req, res) => {
     }
 
     const result = await pool.query(
-      "INSERT INTO wallet (user_id, balance, currency) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO wallet (user_id, balance, spark_tokens, currency) VALUES ($1, $2, $3) RETURNING *",
       [userId, 0, "gbp"]
     );
 
@@ -81,7 +81,10 @@ exports.fundWallet = async (req, res) => {
       amount, // already in pounds
       "gbp"
     );
-
+    await pool.query(
+      "UPDATE wallet SET balance = balance + $1, spark_tokens = spark_tokens + $2, updated_at = NOW() WHERE user_id = $3",
+      [amount, amount, userId]
+    );
     res.status(200).json({ clientSecret });
   } catch (err) {
     console.error(err);
@@ -148,11 +151,14 @@ exports.creditWalletAfterPayment = async (req, res) => {
     }
 
     // Add to wallet balance
+    // await pool.query(
+    //   "UPDATE wallet SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2",
+    //   [amount, userId]
+    // );
     await pool.query(
-      "UPDATE wallet SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2",
-      [amount, userId]
+      "UPDATE wallet SET balance = balance + $1, spark_tokens = spark_tokens + $1, updated_at = NOW() WHERE user_id = $2",
+      [amount, userId] // adding amount in GBP to both balance and Spark tokens
     );
-
     res.status(200).json({ message: "Wallet credited successfully" });
   } catch (err) {
     res

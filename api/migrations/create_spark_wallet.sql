@@ -1,9 +1,7 @@
-CREATE TABLE wallet (
+CREATE TABLE spark_wallet (
   id SERIAL PRIMARY KEY,
   user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  balance BIGINT DEFAULT 0, -- store in the smallest unit: pence (e.g. 10000 = £100.00)
-    spark_tokens BIGINT DEFAULT 0,
-  currency VARCHAR(10) DEFAULT 'gbp',
+  spark_tokens BIGINT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
