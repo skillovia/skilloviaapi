@@ -253,88 +253,88 @@ exports.getProfileByUserId = async (req, res) => {
   }
 };
 
-exports.getBasiceProfileByUserId = async (req, res) => {
-  const userId = parseInt(req.params.id);
+// exports.getBasiceProfileByUserId = async (req, res) => {
+//   const userId = parseInt(req.params.id);
 
-  try {
-    const data = await User.getProfileByUserId(userId);
+//   try {
+//     const data = await User.getProfileByUserId(userId);
 
-    if (data.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        message: "User profile not found.",
-        data: data,
-      });
-    }
+//     if (data.length === 0) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "User profile not found.",
+//         data: data,
+//       });
+//     }
 
-    const {
-      id,
-      phone,
-      email,
-      firstname,
-      lastname,
-      gender,
-      notification_type,
-      appearance_mode,
-      photourl,
-      bio,
-      total_followers,
-      total_following,
-      location,
-      street,
-      zip_code,
-      referral_code,
+//     const {
+//       id,
+//       phone,
+//       email,
+//       firstname,
+//       lastname,
+//       gender,
+//       notification_type,
+//       appearance_mode,
+//       photourl,
+//       bio,
+//       total_followers,
+//       total_following,
+//       location,
+//       street,
+//       zip_code,
+//       referral_code,
 
-      website,
-    } = data[0];
+//       website,
+//     } = data[0];
 
-    // Map skills to an array
-    const skills = data[0].skills.map((item) => ({
-      skill_id: item.skill_id,
-      description: item.description,
-      skill_type: item.skill_type,
-      spark_token: item.spark_token || 0,
-      experience_level: item.experience_level,
-      hourly_rate: item.hourly_rate,
-      thumbnail01: item.thumbnail01,
-      thumbnail02: item.thumbnail02,
-      thumbnail03: item.thumbnail03,
-      thumbnail04: item.thumbnail04,
-    }));
+//     // Map skills to an array
+//     const skills = data[0].skills.map((item) => ({
+//       skill_id: item.skill_id,
+//       description: item.description,
+//       skill_type: item.skill_type,
+//       spark_token: item.spark_token || 0,
+//       experience_level: item.experience_level,
+//       hourly_rate: item.hourly_rate,
+//       thumbnail01: item.thumbnail01,
+//       thumbnail02: item.thumbnail02,
+//       thumbnail03: item.thumbnail03,
+//       thumbnail04: item.thumbnail04,
+//     }));
 
-    const userProfile = {
-      id,
-      phone,
-      email,
-      firstname,
-      lastname,
-      gender,
-      notification_type,
-      appearance_mode,
-      photourl,
-      bio,
-      total_followers,
-      total_following,
-      location,
-      street,
-      zip_code,
-      referral_code,
-      website,
+//     const userProfile = {
+//       id,
+//       phone,
+//       email,
+//       firstname,
+//       lastname,
+//       gender,
+//       notification_type,
+//       appearance_mode,
+//       photourl,
+//       bio,
+//       total_followers,
+//       total_following,
+//       location,
+//       street,
+//       zip_code,
+//       referral_code,
+//       website,
 
-      skills: skills,
-    };
+//       skills: skills,
+//     };
 
-    res.status(200).json({
-      status: "success",
-      message: "User profile retrieved successfully.",
-      data: userProfile,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ status: "error", message: "Failed to retrieve profile." });
-  }
-};
+//     res.status(200).json({
+//       status: "success",
+//       message: "User profile retrieved successfully.",
+//       data: userProfile,
+//     });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ status: "error", message: "Failed to retrieve profile." });
+//   }
+// };
 
 // Controller function to compare SparkTokens
 // exports.compareSparkTokens = async (req, res) => {
@@ -480,6 +480,105 @@ exports.getBasiceProfileByUserId = async (req, res) => {
 //     return res.status(500).json({ message: "Internal server error" });
 //   }
 // };
+
+const pool = require("../db"); // make sure you have access to your DB pool
+
+exports.getBasiceProfileByUserId = async (req, res) => {
+  const userId = parseInt(req.params.id);
+
+  try {
+    const data = await User.getProfileByUserId(userId);
+
+    if (data.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "User profile not found.",
+        data: data,
+      });
+    }
+
+    // Fetch wallet info
+    const walletResult = await pool.query(
+      "SELECT * FROM wallet WHERE user_id = $1",
+      [userId]
+    );
+    const wallet = walletResult.rows[0] || {
+      balance: 0,
+      currency: "gbp",
+    };
+
+    const {
+      id,
+      phone,
+      email,
+      firstname,
+      lastname,
+      gender,
+      notification_type,
+      appearance_mode,
+      photourl,
+      bio,
+      total_followers,
+      total_following,
+      location,
+      street,
+      zip_code,
+      referral_code,
+      website,
+    } = data[0];
+
+    const skills = data[0].skills.map((item) => ({
+      skill_id: item.skill_id,
+      description: item.description,
+      skill_type: item.skill_type,
+      spark_token: item.spark_token || 0,
+      experience_level: item.experience_level,
+      hourly_rate: item.hourly_rate,
+      thumbnail01: item.thumbnail01,
+      thumbnail02: item.thumbnail02,
+      thumbnail03: item.thumbnail03,
+      thumbnail04: item.thumbnail04,
+    }));
+
+    const userProfile = {
+      id,
+      phone,
+      email,
+      firstname,
+      lastname,
+      gender,
+      notification_type,
+      appearance_mode,
+      photourl,
+      bio,
+      total_followers,
+      total_following,
+      location,
+      street,
+      zip_code,
+      referral_code,
+      website,
+      wallet: {
+        balance: wallet.balance,
+        currency: wallet.currency,
+      },
+      skills,
+    };
+
+    res.status(200).json({
+      status: "success",
+      message: "User profile retrieved successfully.",
+      data: userProfile,
+    });
+  } catch (error) {
+    console.error("Profile error:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve profile.",
+    });
+  }
+};
+
 exports.compareSparkTokens = async (req, res) => {
   const userId = req.user.id; // securely from token (logged-in user's ID)
   const { skillId, targetUserId } = req.body; // skillId and targetUserId passed in the request body
