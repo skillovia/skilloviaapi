@@ -218,8 +218,30 @@ const processSplitPayment = async (
   }
 };
 
+const createWalletFundingIntent = async (
+  customerEmail,
+  amountInPounds,
+  currency
+) => {
+  try {
+    const amountInCents = Math.floor(amountInPounds * 100); // convert to pence
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency,
+      payment_method_types: ["card"],
+      receipt_email: customerEmail,
+    });
+
+    return paymentIntent.client_secret;
+  } catch (error) {
+    console.error("Error creating wallet funding intent:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createConnectedAccount,
   generateAccountLink,
   processSplitPayment,
+  createWalletFundingIntent,
 };

@@ -3,6 +3,7 @@ const {
   createConnectedAccount,
   generateAccountLink,
   processSplitPayment,
+  createWalletFundingIntent,
 } = require("../utils/stripe");
 
 // CREATE WALLET
@@ -32,9 +33,38 @@ exports.createWalletForUser = async (req, res) => {
 };
 
 // FUND WALLET
+// exports.fundWallet = async (req, res) => {
+//   const userId = req.user.id;
+//   const { amount } = req.body;
+
+//   try {
+//     const user = await pool.query("SELECT email FROM users WHERE id = $1", [
+//       userId,
+//     ]);
+//     const customerEmail = user.rows[0]?.email;
+
+//     if (!customerEmail) {
+//       return res.status(404).json({ message: "User email not found" });
+//     }
+
+//     const clientSecret = await processSplitPayment(
+//       customerEmail,
+//       amount / 100, // convert from pence to GBP for the util
+//       "gbp",
+//       process.env.PLATFORM_STRIPE_ACCOUNT_ID // or null if just funding wallet
+//     );
+
+//     res.status(200).json({ clientSecret });
+//   } catch (err) {
+//     res
+//       .status(500)
+//       .json({ message: "Failed to create payment intent", error: err.message });
+//   }
+// };
+
 exports.fundWallet = async (req, res) => {
   const userId = req.user.id;
-  const { amount } = req.body;
+  const { amount } = req.body; // amount in pence or pounds? let’s go with pounds for this
 
   try {
     const user = await pool.query("SELECT email FROM users WHERE id = $1", [
@@ -46,18 +76,19 @@ exports.fundWallet = async (req, res) => {
       return res.status(404).json({ message: "User email not found" });
     }
 
-    const clientSecret = await processSplitPayment(
+    const clientSecret = await createWalletFundingIntent(
       customerEmail,
-      amount / 100, // convert from pence to GBP for the util
-      "gbp",
-      process.env.PLATFORM_STRIPE_ACCOUNT_ID // or null if just funding wallet
+      amount, // already in pounds
+      "gbp"
     );
 
     res.status(200).json({ clientSecret });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to create payment intent", error: err.message });
+    console.error(err);
+    res.status(500).json({
+      message: "Failed to create wallet funding payment intent",
+      error: err.message,
+    });
   }
 };
 
