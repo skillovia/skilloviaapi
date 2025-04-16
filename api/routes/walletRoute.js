@@ -6,6 +6,7 @@ const {
   fundWallet,
   payWithWallet,
   getWalletBalance,
+  creditWalletAfterPayment,
 } = require("../controllers/walletController");
 const verify = require("../middlewares/verifyToken");
 
