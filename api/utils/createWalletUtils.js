@@ -1,6 +1,5 @@
 // utils/createWalletUtil.js
-const pool = require("../db"); // adjust path to your DB config
-
+const pool = require("../config/db");
 const createWalletForUser = async (userId) => {
   const existing = await pool.query("SELECT * FROM wallet WHERE user_id = $1", [
     userId,
