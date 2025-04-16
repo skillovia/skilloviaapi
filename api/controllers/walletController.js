@@ -132,6 +132,34 @@ exports.payWithWallet = async (req, res) => {
       .json({ message: "Failed to complete payment", error: err.message });
   }
 };
+// CREDIT WALLET AFTER PAYMENT SUCCESS
+exports.creditWalletAfterPayment = async (req, res) => {
+  const userId = req.user.id;
+  const { amount } = req.body; // in pounds
+
+  try {
+    const existing = await pool.query(
+      "SELECT * FROM wallet WHERE user_id = $1",
+      [userId]
+    );
+
+    if (!existing.rows.length) {
+      return res.status(404).json({ message: "Wallet not found" });
+    }
+
+    // Add to wallet balance
+    await pool.query(
+      "UPDATE wallet SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2",
+      [amount, userId]
+    );
+
+    res.status(200).json({ message: "Wallet credited successfully" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to credit wallet", error: err.message });
+  }
+};
 
 // GET WALLET BALANCE
 exports.getWalletBalance = async (req, res) => {

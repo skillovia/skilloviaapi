@@ -17,6 +17,7 @@ router.post("/wallet/fund", verify, fundWallet);
 
 // Pay for skill with wallet
 router.post("/wallet/pay", verify, payWithWallet);
+router.post("/wallet/credit", verify, creditWalletAfterPayment);
 
 // Get user's wallet balance
 router.get("/wallet/balance", verify, getWalletBalance);
