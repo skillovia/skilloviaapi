@@ -7,6 +7,30 @@ const {
 } = require("../utils/stripe");
 
 // CREATE WALLET
+// exports.createWalletForUser = async (req, res) => {
+//   const userId = req.user.id;
+
+//   try {
+//     const existing = await pool.query(
+//       "SELECT * FROM wallet WHERE user_id = $1",
+//       [userId]
+//     );
+//     if (existing.rows.length > 0) {
+//       return res.status(400).json({ message: "Wallet already exists" });
+//     }
+
+//     const result = await pool.query(
+//       "INSERT INTO wallet (user_id, balance, spark_tokens, currency) VALUES ($1, $2, $3) RETURNING *",
+//       [userId, 0, "gbp"]
+//     );
+
+//     res.status(201).json({ message: "Wallet created", wallet: result.rows[0] });
+//   } catch (err) {
+//     res
+//       .status(500)
+//       .json({ message: "Error creating wallet", error: err.message });
+//   }
+// };
 exports.createWalletForUser = async (req, res) => {
   const userId = req.user.id;
 
@@ -15,20 +39,29 @@ exports.createWalletForUser = async (req, res) => {
       "SELECT * FROM wallet WHERE user_id = $1",
       [userId]
     );
+
     if (existing.rows.length > 0) {
       return res.status(400).json({ message: "Wallet already exists" });
     }
 
+    const initialBalance = 0;
+    const initialSparkTokens = 20;
+    const currency = "gbp";
+
     const result = await pool.query(
-      "INSERT INTO wallet (user_id, balance, spark_tokens, currency) VALUES ($1, $2, $3) RETURNING *",
-      [userId, 0, "gbp"]
+      "INSERT INTO wallet (user_id, balance, spark_tokens, currency) VALUES ($1, $2, $3, $4) RETURNING *",
+      [userId, initialBalance, initialSparkTokens, currency]
     );
 
-    res.status(201).json({ message: "Wallet created", wallet: result.rows[0] });
+    res.status(201).json({
+      message: "Wallet created with 20 spark tokens.",
+      wallet: result.rows[0],
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error creating wallet", error: err.message });
+    res.status(500).json({
+      message: "Error creating wallet",
+      error: err.message,
+    });
   }
 };
 
