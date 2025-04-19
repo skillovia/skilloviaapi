@@ -1098,17 +1098,101 @@ exports.generateStripeAccountLink = async (req, res) => {
   }
 };
 
+// exports.processSplitPayment = async (req, res) => {
+//   const userId = req.user.id;
+//   const { customerEmail, amount, currency, stripeAccountId } = req.body;
+
+//   if (
+//     stripeAccountId != null &&
+//     amount != null &&
+//     currency != null &&
+//     customerEmail != null
+//   ) {
+//     try {
+//       const paymentIntent = await processSplitPayment(
+//         customerEmail,
+//         amount,
+//         currency,
+//         stripeAccountId
+//       );
+
+//       if (paymentIntent) {
+//         res.status(200).json({
+//           status: "success",
+//           message: "Payment Intent Created Successfully",
+//           data: paymentIntent,
+//         });
+//       }
+//     } catch (error) {
+//       res.status(500).json({
+//         status: "error",
+//         message: "Failed to generate Payment Intent",
+//         data: error.detail,
+//       });
+//     }
+//   } else {
+//     res.status(400).json({
+//       status: "error",
+//       message: "customerEmail, amount, currency, stripeAccountId are required",
+//       data: null,
+//     });
+//   }
+// };
 exports.processSplitPayment = async (req, res) => {
   const userId = req.user.id;
-  const { customerEmail, amount, currency, stripeAccountId } = req.body;
+  const { amount, currency, stripeAccountId, customerEmail, paymentMethod } =
+    req.body;
 
-  if (
-    stripeAccountId != null &&
-    amount != null &&
-    currency != null &&
-    customerEmail != null
-  ) {
-    try {
+  try {
+    // Wallet method
+    if (paymentMethod === "wallet" || paymentMethod === "spark_token") {
+      const wallet = await pool.query(
+        "SELECT * FROM wallet WHERE user_id = $1",
+        [userId]
+      );
+
+      if (wallet.rows.length === 0) {
+        return res.status(404).json({ message: "Wallet not found" });
+      }
+
+      const userWallet = wallet.rows[0];
+      const currentBalance = parseFloat(
+        paymentMethod === "wallet"
+          ? userWallet.balance
+          : userWallet.spark_tokens
+      );
+
+      if (currentBalance < amount) {
+        return res
+          .status(400)
+          .json({ message: "Insufficient balance in wallet." });
+      }
+
+      // Deduct from appropriate wallet
+      if (paymentMethod === "wallet") {
+        await pool.query(
+          "UPDATE wallet SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2",
+          [amount, userId]
+        );
+      } else if (paymentMethod === "spark_token") {
+        await pool.query(
+          "UPDATE wallet SET spark_tokens = spark_tokens - $1, updated_at = NOW() WHERE user_id = $2",
+          [amount, userId]
+        );
+      }
+
+      // If using wallet, simulate success (you can log internally)
+      return res.status(200).json({
+        status: "success",
+        message: `Payment of £${amount} made from ${paymentMethod.replace(
+          "_",
+          " "
+        )}.`,
+      });
+    }
+
+    // Stripe payment method (split payment)
+    if (paymentMethod === "stripe") {
       const paymentIntent = await processSplitPayment(
         customerEmail,
         amount,
@@ -1117,24 +1201,20 @@ exports.processSplitPayment = async (req, res) => {
       );
 
       if (paymentIntent) {
-        res.status(200).json({
+        return res.status(200).json({
           status: "success",
-          message: "Payment Intent Created Successfully",
+          message: "Stripe Payment Intent Created",
           data: paymentIntent,
         });
       }
-    } catch (error) {
-      res.status(500).json({
-        status: "error",
-        message: "Failed to generate Payment Intent",
-        data: error.detail,
-      });
     }
-  } else {
-    res.status(400).json({
-      status: "error",
-      message: "customerEmail, amount, currency, stripeAccountId are required",
-      data: null,
+
+    return res.status(400).json({ message: "Invalid payment method" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Payment processing failed",
+      error: err.message,
     });
   }
 };
