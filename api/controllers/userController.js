@@ -559,6 +559,7 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       website,
       wallet: {
         balance: wallet.balance,
+        spark_tokens: wallet.spark_tokens,
         currency: wallet.currency,
       },
       skills,
