@@ -502,6 +502,7 @@ exports.getBasiceProfileByUserId = async (req, res) => {
     );
     const wallet = walletResult.rows[0] || {
       balance: 0,
+      spark_tokens: 0,
       currency: "gbp",
     };
 
