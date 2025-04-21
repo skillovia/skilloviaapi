@@ -32,6 +32,10 @@ const allowedOrigins = [
   "http://localhost:19006",
   "http://localhost:5172",
   "https://skilloviaweb.vercel.app",
+  "https://skillovia.co.uk",
+  "https://skillovia.com",
+  "https://www.skillovia.co.uk",
+  "https://www.skillovia.com",
   "https://skilloviaadmin.vercel.app",
   "https://www.skilloviaadmin.vercel.app",
 ];
