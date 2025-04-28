@@ -7,7 +7,7 @@ AUTH ROUTES
 /api/auth/reset/password/:id  (PUT - BODY: password, newPassword  -  PARAMS: id)
 /api/auth/sendverificationcode  (POST - BODY: phone)
 /api/auth/verifyphone  (POST - BODY: phone, code)
-
+/api/google
 
 USER ROUTES
 /api/users/update/:id  (PUT - BODY: email, firstname, lastname, gender, password  -  PARAMS: id )
