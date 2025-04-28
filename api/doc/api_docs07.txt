@@ -23,6 +23,15 @@ router.get("/all", verify, getAllDisputes);
 
 
 
+
+FOLLOW ROUTES
+
+
+router.post('/follow/:follower_id', verify, followAccount);
+router.delete('/unfollow/:follower_id', verify, unfollowAccount);
+router.get('/getfollowers', verify, getFollowerList);
+router.get('/getfollowings', verify, getFollowingList);
+
 USERS ROUTES
 api/users/searchuser/:name (GET)
 api/users/update/:id (PUT  -  BODY: email, firstname, lastname, gender, password, location, street, zip_code, lat, lon, referred_by, referral_code, website)
