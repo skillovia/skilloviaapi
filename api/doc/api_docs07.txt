@@ -31,7 +31,11 @@ router.post('/follow/:follower_id', verify, followAccount);
 router.delete('/unfollow/:follower_id', verify, unfollowAccount);
 router.get('/getfollowers', verify, getFollowerList);
 router.get('/getfollowings', verify, getFollowingList);
+router.get("/bookings", verify, getBookingNotifications);
 
+router.get("/followees", verify, getFolloweeNotifications);
+
+router.get("/follower", verify, getFollowNotifications);
 USERS ROUTES
 api/users/searchuser/:name (GET)
 api/users/update/:id (PUT  -  BODY: email, firstname, lastname, gender, password, location, street, zip_code, lat, lon, referred_by, referral_code, website)
