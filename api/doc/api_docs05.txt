@@ -20,3 +20,7 @@ SETTINGS ROUTES
 
 MESSAGE ROUTES
 /api/message/chat/history/users  (GET)  // get user chats
+
+Review ROUTES
+/api/reviews (POST)
+/api/reviews (GET)
