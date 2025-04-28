@@ -6,7 +6,9 @@ BOOKINGS ROUTES
 /api/bookings/get/user/inward  (GET)
 /api/bookings/get/user/outward  (GET)
 /api/bookings/:id (DELETE)
-
+router.put("/accept/:id", verify, acceptBookings);
+router.put("/in-progress/:id", verify, startBooking);
+router.put("/completed/:id", verify, completeBooking);
 USERS ROUTES
 api/users/searchuser/:name (GET)
 api/users/update/:id (PUT  -  BODY: email, firstname, lastname, gender, password, location, street, zip_code, lat, lon, referred_by, referral_code, website)
