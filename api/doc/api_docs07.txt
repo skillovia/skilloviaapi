@@ -9,6 +9,20 @@ BOOKINGS ROUTES
 router.put("/accept/:id", verify, acceptBookings);
 router.put("/in-progress/:id", verify, startBooking);
 router.put("/completed/:id", verify, completeBooking);
+
+
+
+
+
+DISPUTE ROUTES
+
+// Routes
+router.post("/open", verify, upload.single("file"), openDispute);
+router.get("/user", verify, getUserDisputes);
+router.get("/all", verify, getAllDisputes);
+
+
+
 USERS ROUTES
 api/users/searchuser/:name (GET)
 api/users/update/:id (PUT  -  BODY: email, firstname, lastname, gender, password, location, street, zip_code, lat, lon, referred_by, referral_code, website)
