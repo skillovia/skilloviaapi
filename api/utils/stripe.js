@@ -6,8 +6,12 @@ const createConnectedAccount = async (email) => {
       country: "GB",
       email: email,
       business_type: "individual",
+      // capabilities: {
+      //   transfers: { requested: true }, // Enable payouts
+      // },
       capabilities: {
-        transfers: { requested: true }, // Enable payouts
+        card_payments: { requested: true }, // ✅ required with transfers
+        transfers: { requested: true }, // ✅ enables payouts
       },
       controller: {
         fees: {
