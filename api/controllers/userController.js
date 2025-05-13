@@ -7,6 +7,7 @@ const {
   generateAccountLink,
   processSplitPayment,
 } = require("../utils/stripe");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 exports.updateUser = async (req, res) => {
   const userId = req.params.id;
@@ -1215,6 +1216,34 @@ exports.processSplitPayment = async (req, res) => {
     return res.status(500).json({
       message: "Payment processing failed",
       error: err.message,
+    });
+  }
+};
+
+// ✅ New Controller: Create onboarding link for connected account
+exports.createOnboardingLink = async (req, res) => {
+  const { connectedAccountId } = req.body;
+
+  if (!connectedAccountId) {
+    return res
+      .status(400)
+      .json({ message: "Connected account ID is required." });
+  }
+
+  try {
+    const accountLink = await stripe.accountLinks.create({
+      account: connectedAccountId,
+      refresh_url: "https://yourdomain.com/reauth", // change to your frontend reauth URL
+      return_url: "https://yourdomain.com/dashboard", // change to your frontend success URL
+      type: "account_onboarding",
+    });
+
+    return res.status(200).json({ url: accountLink.url });
+  } catch (error) {
+    console.error("❌ Error creating onboarding link:", error);
+    return res.status(500).json({
+      message: "Failed to generate onboarding link",
+      error: error.message,
     });
   }
 };
