@@ -124,7 +124,7 @@ router.post(
   verify,
   generateStripeAccountLink
 );
-router.post("/stripe/account/onboard", verify, createOnboardingLink);
+router.post("/stripe/account/onboard", createOnboardingLink);
 router.post("/stripe/payment/intent", verify, processSplitPayment);
 router.put("/stripe/update/account", verify, updateStripeAccount);
 router.get("/stripe/get/account/:userId", verify, getUserStripeAccount);
