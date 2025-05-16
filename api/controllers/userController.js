@@ -1234,7 +1234,7 @@ exports.createOnboardingLink = async (req, res) => {
     const accountLink = await stripe.accountLinks.create({
       account: connectedAccountId,
       refresh_url: "https://skilloviaweb.vercel.app/reauth", // change to your frontend reauth URL
-      return_url: "https://skilloviaweb.vercel.app/dashboards", // change to your frontend success URL
+      return_url: "https://skilloviaweb.vercel.app/success", // change to your frontend success URL
       type: "account_onboarding",
     });
 
