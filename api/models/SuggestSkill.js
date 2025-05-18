@@ -46,7 +46,7 @@ class SuggestSkill {
           [name]
         );
         return result.rows[0];
-      }
+    }
 
 
     static async retrieveSuggestedSkills(status) {
@@ -64,6 +64,15 @@ class SuggestSkill {
             [status]
         );
         return result.rows;
+    }
+
+
+    static async findSuggestedSkillById(id) {
+        const result = await pool.query(
+          'SELECT * FROM suggest_skills WHERE id = $1',
+          [id]
+        );
+        return result.rows[0];
     }
     
 

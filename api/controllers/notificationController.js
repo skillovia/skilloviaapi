@@ -1,5 +1,15 @@
 const Notifications = require("../models/Notifications");
 
+exports.storeNotification = async (userId, title, description) => {
+  try {
+    const notification = await Notifications.store(userId, title, description);
+    return true
+
+  } catch (error) {
+    return 'Failed to store notifications';
+  }
+};
+
 exports.getNotifications = async (req, res) => {
   try {
     const userId = req.user.id;

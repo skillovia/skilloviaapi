@@ -45,8 +45,41 @@ exports.createBookings = async (req, res) => {
     fileUrl = req.file.location; // AWS S3 returns the file URL in `req.file.location`
   }
 
+  // Extract file paths from uploaded thumbnails
+  const filePaths = req.files?.thumbnails
+    ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
+    : [];
+
+  console.log("📂 Extracted File Paths:", filePaths);
+
+  const {
+    skills_id,
+    booked_user_id,
+    title,
+    description,
+    booking_location,
+    booking_date,
+  } = data;
+
+
+  const formatedData = {
+    skills_id,
+    booked_user_id,
+    title,
+    spark_token, 
+    description,
+    booking_location,
+    booking_date,
+    thumbnails: {
+      thumbnail01: filePaths[0] || null,
+      thumbnail02: filePaths[1] || null,
+      thumbnail03: filePaths[2] || null,
+      thumbnail04: filePaths[3] || null,
+    },
+  };
+
   try {
-    const bookings = await Bookings.create(userId, data, fileUrl);
+    const bookings = await Bookings.create(userId, formatedData);
     res.status(200).json({
       status: "success",
       message: "Skill booked successfully.",

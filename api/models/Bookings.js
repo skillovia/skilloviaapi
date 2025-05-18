@@ -21,10 +21,11 @@ class Booking {
       description,
       booking_location,
       booking_date,
+      thumbnails,
     } = data;
 
     const result = await pool.query(
-      "INSERT INTO bookings (skills_id, booking_user_id, booked_user_id, title, description, booking_location, booking_date, file_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
+      "INSERT INTO bookings (skills_id, booking_user_id, booked_user_id, title, description, booking_location, booking_date, thumbnail01, thumbnail02, thumbnail03, thumbnail04) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *",
       [
         skills_id,
         userId,
@@ -33,7 +34,10 @@ class Booking {
         description,
         booking_location,
         booking_date,
-        file,
+        thumbnails.thumbnail01,
+        thumbnails.thumbnail02,
+        thumbnails.thumbnail03,
+        thumbnails.thumbnail04,
       ]
     );
 

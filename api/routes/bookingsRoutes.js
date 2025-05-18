@@ -69,7 +69,7 @@ const upload = multer({
 });
 
 // router.post('/', verify, upload.single('file'), createBookings);
-router.post("/", verify, upload.single("file"), async (req, res) => {
+router.post("/", verify, upload.fields([{ name: "thumbnails", maxCount: 4 }]), async (req, res) => {
   try {
     await createBookings(req, res);
   } catch (err) {

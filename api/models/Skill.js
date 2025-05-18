@@ -59,7 +59,7 @@ class Skill {
       description,
       thumbnails,
     } = data;
-    const approval_status = "draft";
+    const approval_status = "published";
 
     // Check if the spark_token is already a number, if not, parse it
     const finalSparkToken = spark_token ? parseInt(spark_token, 10) : null;

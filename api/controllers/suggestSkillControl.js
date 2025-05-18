@@ -1,4 +1,5 @@
 const SuggestSkill = require("../models/SuggestSkill")
+const notificationController = require("./notificationController")
 
 exports.createSuggestSkill = async (req, res) => {
     const userId = req.user.id;
@@ -26,6 +27,10 @@ exports.updateStatus = async (req, res) => {
     try {
       const skill = await SuggestSkill.updateStatus(skillId, updates);
       res.status(200).json({ status: 'success', message: 'Status updated successfully.', data: skill });
+      
+      const findSkill = await SuggestSkill.updateStatus(skillId);
+      const skillUserId = findSkill.user_id
+      await notificationController.storeNotification(skillUserId)
     } catch (error) {
       res.status(500).json({status: 'error', message: 'Failed to update suggested skill.' });
     }
