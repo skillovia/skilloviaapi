@@ -6,7 +6,7 @@ const session = require("express-session");
 const passport = require("passport");
 const http = require("http");
 const { Server } = require("socket.io");
-
+const MongoStore = require("connect-mongo");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const walletRoute = require("./routes/walletRoute");
@@ -68,13 +68,25 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// app.use(
+//   session({
+//     secret: process.env.GOOGLE_CLIENT_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 app.use(
   session({
-    secret: process.env.GOOGLE_CLIENT_SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      ttl: 14 * 24 * 60 * 60, // optional: session expires in 14 days
+    }),
   })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -101,4 +113,21 @@ app.use("/api/bookings", bookingsRoutes);
 
 // Server
 const PORT = process.env.PORT || 5001;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const mongoose = require("mongoose");
+
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("✅ MongoDB connected");
+
+    // Start server only after DB connection
+    const PORT = process.env.PORT || 5001;
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });

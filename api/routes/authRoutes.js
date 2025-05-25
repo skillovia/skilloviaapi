@@ -8,7 +8,7 @@ const {
   changePassword,
   verifyPhone,
   sendVerificationCode,
-  verifyEmail,
+  AllVerifyEmail,
   resendEmailVerirficationCode,
   adminDelete,
   forgotPassword,
@@ -26,7 +26,7 @@ router.put("/reset/password/:id", changePassword);
 router.put("/reset/password", changePassword);
 router.post("/sendverificationcode", sendVerificationCode);
 router.post("/verifyphone", verifyPhone);
-router.post("/verify/email", verifyEmail);
+router.post("/verify/email", AllVerifyEmail);
 router.post("/resend/code", resendEmailVerirficationCode);
 router.post("/forgot/password", forgotPassword);
 router.post("/reset/forgot/password", resetPassword);
