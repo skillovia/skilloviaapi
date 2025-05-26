@@ -1,8 +1,8 @@
 const { stat } = require("fs/promises");
-const VerifyEmail = require("./Verify");
 
 // models/User.js
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
@@ -21,6 +21,14 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
     gender: { type: String },
+    location: { type: String },
+    street: { type: String },
+    zip_code: { type: String },
+    lat: { type: Number },
+    lon: { type: Number },
+    referred_by: { type: String },
+    website: { type: String },
+
     password: {
       type: String,
       required: true,
@@ -111,9 +119,6 @@ userSchema.statics.changeAppearanceMode = async function (userId, mode) {
   );
 };
 userSchema.statics.getProfileByUserId = async function (id) {
-  const mongoose = require("mongoose");
-  const ObjectId = mongoose.Types.ObjectId;
-
   const [profile] = await this.aggregate([
     { $match: { _id: new ObjectId(id) } },
 
@@ -414,6 +419,50 @@ userSchema.statics.setReferralCode = async function (userId, code) {
 
 userSchema.statics.getUsersByReferralCode = async function (code) {
   return await this.find({ referred_by: code });
+};
+
+userSchema.statics.update = async function (userId, updates) {
+  const {
+    email,
+    firstname,
+    lastname,
+    gender,
+    password,
+    location,
+    street,
+    zip_code,
+    lat,
+    lon,
+    referred_by,
+    website,
+  } = updates;
+
+  const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+
+  // Build update object, only include fields that are not undefined
+  const updateData = {};
+
+  if (email !== undefined) updateData.email = email;
+  if (firstname !== undefined) updateData.firstname = firstname;
+  if (lastname !== undefined) updateData.lastname = lastname;
+  if (gender !== undefined) updateData.gender = gender;
+  if (hashedPassword !== undefined) updateData.password = hashedPassword;
+  if (location !== undefined) updateData.location = location;
+  if (street !== undefined) updateData.street = street;
+  if (zip_code !== undefined) updateData.zip_code = zip_code;
+  if (lat !== undefined) updateData.lat = lat;
+  if (lon !== undefined) updateData.lon = lon;
+  if (referred_by !== undefined) updateData.referred_by = referred_by;
+  if (website !== undefined) updateData.website = website;
+
+  // Update the document and return the updated document
+  const updatedUser = await this.findByIdAndUpdate(
+    userId,
+    { $set: updateData },
+    { new: true } // return the updated doc
+  );
+
+  return updatedUser;
 };
 
 // Static method

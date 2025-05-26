@@ -1,127 +1,125 @@
-const pool = require("../config/db");
-const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 
-class Booking {
-  // static async create(userId, data, file) {
-  //     const { skills_id, booked_user_id, title, description, booking_location, booking_date } = data;
+const bookingSchema = new mongoose.Schema(
+  {
+    skills_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Skill",
+      required: true,
+    },
+    booking_user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    booked_user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    title: { type: String, required: true },
+    description: { type: String },
+    booking_location: { type: String },
+    booking_date: { type: Date },
+    thumbnail01: { type: String },
+    thumbnail02: { type: String },
+    thumbnail03: { type: String },
+    thumbnail04: { type: String },
+    file_url: { type: String },
+    status: { type: String, default: "pending" }, // example default status
+  },
+  { timestamps: true }
+);
 
-  //     const result = await pool.query(
-  //     'INSERT INTO bookings (skills_id, booking_user_id, booked_user_id, title, description, booking_location, booking_date, file_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-  //     [skills_id, userId, booked_user_id, title, description, booking_location, booking_date, file]
-  //     );
+// Assuming you have a Notification model
+const Notification = require("./Notifications"); // update path as needed
 
-  //     return result.rows[0];
-  // }
+bookingSchema.statics.createBooking = async function (userId, data, file) {
+  const {
+    skills_id,
+    booked_user_id,
+    title,
+    description,
+    booking_location,
+    booking_date,
+    thumbnails = {},
+  } = data;
 
-  static async create(userId, data, file) {
-    const {
-      skills_id,
-      booked_user_id,
-      title,
-      description,
-      booking_location,
-      booking_date,
-      thumbnails,
-    } = data;
+  const booking = new this({
+    skills_id,
+    booking_user_id: userId,
+    booked_user_id,
+    title,
+    description,
+    booking_location,
+    booking_date,
+    thumbnail01: thumbnails.thumbnail01,
+    thumbnail02: thumbnails.thumbnail02,
+    thumbnail03: thumbnails.thumbnail03,
+    thumbnail04: thumbnails.thumbnail04,
+    file_url: file,
+  });
 
-    const result = await pool.query(
-      "INSERT INTO bookings (skills_id, booking_user_id, booked_user_id, title, description, booking_location, booking_date, thumbnail01, thumbnail02, thumbnail03, thumbnail04) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *",
-      [
-        skills_id,
-        userId,
-        booked_user_id,
-        title,
-        description,
-        booking_location,
-        booking_date,
-        thumbnails.thumbnail01,
-        thumbnails.thumbnail02,
-        thumbnails.thumbnail03,
-        thumbnails.thumbnail04,
-      ]
-    );
+  const savedBooking = await booking.save();
 
-    // 🔹 Create Notifications for Both Users
-    await pool.query(
-      `INSERT INTO notifications (user_id, title, description) VALUES
-            ($1, $2, $3),  -- Notification for the person who booked
-            ($4, $5, $6)   -- Notification for the skill owner
-            `,
-      [
-        userId,
-        "Booking Created",
-        `Your booking for "${title}" is pending.`,
+  // Create notifications for both users
+  await Notification.insertMany([
+    {
+      user_id: userId,
+      title: "Booking Created",
+      description: `Your booking for "${title}" is pending.`,
+    },
+    {
+      user_id: booked_user_id,
+      title: "New Booking Received",
+      description: `Someone has booked your skill: "${title}".`,
+    },
+  ]);
 
-        booked_user_id,
-        "New Booking Received",
-        `Someone has booked your skill: "${title}".`,
-      ]
-    );
+  return savedBooking;
+};
 
-    return result.rows[0];
-  }
-  static async update(id, updates, file) {
-    const { title, description, booking_location, booking_date } = updates;
+bookingSchema.statics.updateBooking = async function (id, updates, file) {
+  const updateData = {
+    ...updates,
+    file_url: file || updates.file_url,
+  };
 
-    const result = await pool.query(
-      `UPDATE bookings 
-        SET title = COALESCE($1, title),
-            description = COALESCE($2, description),
-            booking_location = COALESCE($3, booking_location),
-            booking_date = COALESCE($4, booking_date),
-            file_url = COALESCE($5, file_url)
-        WHERE id = $6 RETURNING *`,
-      [title, description, booking_location, booking_date, file, id]
-    );
-    return result.rows[0];
-  }
+  const updatedBooking = await this.findByIdAndUpdate(
+    id,
+    { $set: updateData },
+    { new: true }
+  );
 
-  static async changeStatus(id, status) {
-    const result = await pool.query(
-      `UPDATE bookings 
-        SET status = COALESCE($1, status)
-        WHERE id = $2 RETURNING *`,
-      [status, id]
-    );
-    return result.rows[0];
-  }
+  return updatedBooking;
+};
 
-  static async getInwardBookingsByUserId(id) {
-    const result = await pool.query(
-      `
-            SELECT 
-                *
-            FROM bookings
-            WHERE booked_user_id = $1
-            `,
-      [id]
-    );
-    return result.rows;
-  }
+bookingSchema.statics.changeStatus = async function (id, status) {
+  const updatedBooking = await this.findByIdAndUpdate(
+    id,
+    { $set: { status } },
+    { new: true }
+  );
+  return updatedBooking;
+};
 
-  static async getOutwardBookingsByUserId(id) {
-    const result = await pool.query(
-      `
-            SELECT 
-                *
-            FROM bookings
-            WHERE booking_user_id = $1
-            `,
-      [id]
-    );
-    return result.rows;
-  }
+bookingSchema.statics.getInwardBookingsByUserId = async function (userId) {
+  return await this.find({ booked_user_id: userId }).exec();
+};
 
-  static async deleteBookings(userId, id) {
-    const result = await pool.query(
-      `DELETE FROM kyc 
-             WHERE id = $1 AND booking_user_id = $2
-             RETURNING *`,
-      [id, userId]
-    );
+bookingSchema.statics.getOutwardBookingsByUserId = async function (userId) {
+  return await this.find({ booking_user_id: userId }).exec();
+};
 
-    return result.rows[0];
-  }
-}
+bookingSchema.statics.deleteBooking = async function (userId, id) {
+  // Deletes booking where id matches and user is booking user
+  const deleted = await this.findOneAndDelete({
+    _id: id,
+    booking_user_id: userId,
+  });
+  return deleted;
+};
+
+const Booking = mongoose.model("Booking", bookingSchema);
 
 module.exports = Booking;

@@ -1,351 +1,169 @@
-const pool = require("../config/db");
-const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
 
-class Skill {
-  /* static async create(userId, data) {
-        const { skill_type, experience_level, hourly_rate, description } = data;
-        const approval_status = 'draft'
+const skillSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    skill_type: { type: String, required: true },
+    experience_level: String,
+    hourly_rate: Number,
+    spark_token: Number,
+    description: String,
+    approval_status: { type: String, default: "draft" },
+    thumbnail01: String,
+    thumbnail02: String,
+    thumbnail03: String,
+    thumbnail04: String,
+  },
+  { timestamps: true }
+);
 
-        const result = await pool.query(
-          'INSERT INTO skills (user_id, skill_type, experience_level, hourly_rate, description, approval_status) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
-          [userId,skill_type,experience_level,hourly_rate,description, approval_status]
-        );
+// Create a new skill and save it (published by default)
+skillSchema.statics.createSkill = async function (userId, data) {
+  const {
+    skill_type,
+    experience_level,
+    hourly_rate,
+    spark_token,
+    description,
+    thumbnails = {},
+  } = data;
 
-        return result.rows[0];
-    } */
+  const skill = new this({
+    userId,
+    skill_type,
+    experience_level,
+    hourly_rate,
+    spark_token: spark_token ? parseInt(spark_token) : null,
+    description,
+    approval_status: "published",
+    thumbnail01: thumbnails.thumbnail01,
+    thumbnail02: thumbnails.thumbnail02,
+    thumbnail03: thumbnails.thumbnail03,
+    thumbnail04: thumbnails.thumbnail04,
+  });
 
-  //   static async create(userId, data) {
-  //     const {
-  //       skill_type,
-  //       experience_level,
-  //       hourly_rate,
-  //       spark_token,
-  //       description,
-  //       thumbnails,
-  //     } = data;
-  //     const approval_status = "draft";
+  return await skill.save();
+};
 
-  //     const result = await pool.query(
-  //       `
-  //             INSERT INTO skills (
-  //             user_id, skill_type, experience_level, hourly_rate, spark_token, description,
-  //             approval_status, thumbnail01, thumbnail02, thumbnail03, thumbnail04
-  //             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-  //             RETURNING *
-  //             `,
-  //       [
-  //         userId,
-  //         skill_type,
-  //         experience_level,
-  //         hourly_rate,
-  //         spark_token,
-  //         description,
-  //         approval_status,
-  //         thumbnails.thumbnail01,
-  //         thumbnails.thumbnail02,
-  //         thumbnails.thumbnail03,
-  //         thumbnails.thumbnail04,
-  //       ]
-  //     );
+// Retrieve all skills for a user with populated user info
+skillSchema.statics.retrieveUserSkills = function (userId) {
+  return this.find({ userId }).populate(
+    "userId",
+    "firstname lastname email photourl"
+  );
+};
 
-  //     return result.rows[0];
-  //   }
-  static async create(userId, data) {
-    const {
-      skill_type,
-      experience_level,
-      hourly_rate,
-      spark_token,
-      description,
-      thumbnails,
-    } = data;
-    const approval_status = "published";
+// Update the approval status of a skill
+skillSchema.statics.updatePublishedStatus = function (skillId, status) {
+  return this.findByIdAndUpdate(
+    skillId,
+    { approval_status: status },
+    { new: true }
+  );
+};
 
-    // Check if the spark_token is already a number, if not, parse it
-    const finalSparkToken = spark_token ? parseInt(spark_token, 10) : null;
+// Update skill partially by user and skillId
+skillSchema.statics.updateSkill = function (userId, skillId, updates) {
+  const updateFields = {
+    skill_type: updates.skill_type,
+    experience_level: updates.experience_level,
+    hourly_rate: updates.hourly_rate,
+    description: updates.description,
+    thumbnail01: updates.thumbnails?.thumbnail01,
+    thumbnail02: updates.thumbnails?.thumbnail02,
+    thumbnail03: updates.thumbnails?.thumbnail03,
+    thumbnail04: updates.thumbnails?.thumbnail04,
+  };
 
-    console.log("📌 Final spark_token before inserting:", finalSparkToken); // Debug log for final spark_token
+  // Remove undefined fields (for partial update)
+  Object.keys(updateFields).forEach(
+    (key) => updateFields[key] === undefined && delete updateFields[key]
+  );
 
-    const result = await pool.query(
-      `
-        INSERT INTO skills (
-        user_id, skill_type, experience_level, hourly_rate, spark_token, description, 
-        approval_status, thumbnail01, thumbnail02, thumbnail03, thumbnail04
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
-        RETURNING *
-        `,
-      [
-        userId,
-        skill_type,
-        experience_level,
-        hourly_rate,
-        finalSparkToken, // Use final parsed spark_token here
-        description,
-        approval_status,
-        thumbnails.thumbnail01,
-        thumbnails.thumbnail02,
-        thumbnails.thumbnail03,
-        thumbnails.thumbnail04,
-      ]
-    );
+  return this.findOneAndUpdate(
+    { _id: skillId, userId },
+    { $set: updateFields },
+    { new: true }
+  );
+};
 
-    return result.rows[0];
-  }
+// Delete a skill by user and skillId
+skillSchema.statics.deleteSkill = function (userId, skillId) {
+  return this.findOneAndDelete({ _id: skillId, userId });
+};
 
-  /* static async update(userId, skillId, updates) {
-        const { skill_type, experience_level, hourly_rate, description } = updates;
-    
-        const result = await pool.query(
-          `UPDATE skills 
-           SET skill_type = COALESCE($1, skill_type),
-               experience_level = COALESCE($2, experience_level),
-               hourly_rate = COALESCE($3, hourly_rate),
-               description = COALESCE($4, description)
-           WHERE id = $5 AND user_id = $6
-           RETURNING *`,
-          [skill_type, experience_level, hourly_rate, description, skillId, userId]
-        );
-        return result.rows[0];
-    } */
+// Delete a specific thumbnail field by setting it to null
+skillSchema.statics.deleteThumbnail = function (
+  userId,
+  skillId,
+  thumbnailField
+) {
+  const update = {};
+  update[thumbnailField] = null;
+  return this.findOneAndUpdate(
+    { _id: skillId, userId },
+    { $set: update },
+    { new: true }
+  );
+};
 
-  static async update(userId, skillId, updates) {
-    const {
-      skill_type,
-      experience_level,
-      hourly_rate,
-      description,
-      thumbnails,
-    } = updates;
+// Search published skills by skill_type (case insensitive partial match)
+skillSchema.statics.searchBySkillType = function (skillType) {
+  return this.find({
+    skill_type: { $regex: skillType, $options: "i" },
+    approval_status: "published",
+  }).populate("userId", "firstname lastname email photourl");
+};
 
-    const result = await pool.query(
-      `
-            UPDATE skills 
-            SET 
-            skill_type = COALESCE($1, skill_type),
-            experience_level = COALESCE($2, experience_level),
-            hourly_rate = COALESCE($3, hourly_rate),
-            description = COALESCE($4, description),
-            thumbnail01 = COALESCE($5, thumbnail01),
-            thumbnail02 = COALESCE($6, thumbnail02),
-            thumbnail03 = COALESCE($7, thumbnail03),
-            thumbnail04 = COALESCE($8, thumbnail04)
-            WHERE id = $9 AND user_id = $10
-            RETURNING *
-            `,
-      [
-        skill_type,
-        experience_level,
-        hourly_rate,
-        description,
-        thumbnails.thumbnail01,
-        thumbnails.thumbnail02,
-        thumbnails.thumbnail03,
-        thumbnails.thumbnail04,
-        skillId,
-        userId,
-      ]
-    );
+// Search published skills by creator name (first or last name)
+skillSchema.statics.searchByCreatorName = function (name) {
+  // Note: Mongoose cannot query nested fields in populate directly in find,
+  // so using aggregate for join-like behavior
+  return this.aggregate([
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    { $unwind: "$user" },
+    {
+      $match: {
+        approval_status: "published",
+        $or: [
+          { "user.firstname": { $regex: name, $options: "i" } },
+          { "user.lastname": { $regex: name, $options: "i" } },
+        ],
+      },
+    },
+  ]);
+};
 
-    return result.rows[0];
-  }
+// Search published skills by spark_token
+skillSchema.statics.searchBySparkToken = function (token) {
+  return this.find({
+    spark_token: token,
+    approval_status: "published",
+  }).populate("userId", "firstname lastname email photourl");
+};
 
-  static async updatePublishedStatus(skillId, status) {
-    const result = await pool.query(
-      `UPDATE skills 
-           SET approval_status = COALESCE($1, approval_status)
-           WHERE id = $2
-           RETURNING *`,
-      [status, skillId]
-    );
-    return result.rows[0];
-  }
+// Find one skill by id and userId
+skillSchema.statics.findSkillByIdAndUser = function (skillId, userId) {
+  return this.findOne({ _id: skillId, userId });
+};
 
-  static async delete(userId, skillId) {
-    const result = await pool.query(
-      `DELETE FROM skills 
-             WHERE id = $1 AND user_id = $2 
-             RETURNING *`,
-      [skillId, userId]
-    );
+// Get all published skills with user details
+skillSchema.statics.getAllPublishedSkills = function () {
+  return this.find({ approval_status: "published" }).populate(
+    "userId",
+    "firstname lastname email photourl"
+  );
+};
 
-    return result.rows[0];
-  }
-
-  static async retrievePublishedSkill(status) {
-    const result = await pool.query(
-      `
-            SELECT 
-                skills.*, 
-                users.id AS user_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl 
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE skills.approval_status = $1
-            `,
-      [status]
-    );
-    return result.rows;
-  }
-
-  static async retrieveUserSkill(userId) {
-    const result = await pool.query(
-      `
-            SELECT 
-                skills.*, 
-                users.id AS user_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl 
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE skills.user_id = $1
-            `,
-      [userId]
-    );
-    return result.rows;
-  }
-
-  static async searchSkillsByName(skillName) {
-    const result = await pool.query(
-      `
-            SELECT 
-                skills.*, 
-                users.id AS creator_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl 
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE skills.skill_type ILIKE $1 
-            AND skills.approval_status = 'published'
-            `,
-      [`%${skillName}%`]
-    );
-    return result.rows;
-  }
-
-  static async searchSkillsByCreatorName(creatorName) {
-    const result = await pool.query(
-      `
-            SELECT 
-                skills.*, 
-                users.id AS creator_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl 
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE (users.firstname || ' ' || users.lastname) ILIKE $1 
-            AND skills.approval_status = 'published'
-            `,
-      [`%${creatorName}%`]
-    );
-    return result.rows;
-  }
-
-  static async searchSkillsBySparktoken(sparkToken) {
-    const result = await pool.query(
-      `
-            SELECT 
-                skills.*, 
-                users.id AS creator_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE skills.spark_token = $1 
-            AND skills.approval_status = 'published'
-            `,
-      [`%${sparkToken}%`]
-    );
-    return result.rows;
-  }
-
-  static async findSkill(id, userId) {
-    const result = await pool.query(
-      "SELECT * FROM skills WHERE id = $1 AND user_id = $2",
-      [id, userId]
-    );
-    return result.rows[0];
-  }
-
-  static async deletePhoto(column, userId, skillId) {
-    const nullVal = null;
-    const result = await pool.query(
-      `UPDATE skills 
-             SET ${column} = ${nullVal}
-             WHERE id = $1 AND user_id = $2
-             RETURNING *`,
-      [skillId, userId]
-    );
-    return result.rows[0];
-  }
-
-  static async searchSkillsByType(skillType) {
-    const result = await pool.query(
-      `
-            SELECT 
-                skills.*, 
-                users.id AS creator_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE skills.skill_type ILIKE $1 
-            AND skills.approval_status = 'published'
-            `,
-      [`%${skillType}%`]
-    );
-    return result.rows;
-  }
-
-  static async searchUsersBySkillType(skillType) {
-    const result = await pool.query(
-      `
-            SELECT DISTINCT ON (users.id)
-                users.id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email,
-                users.photourl,
-                users.phone,
-                skills.skill_type
-            FROM skills 
-            INNER JOIN users ON skills.user_id = users.id
-            WHERE skills.skill_type ILIKE $1 
-            AND skills.approval_status = 'published'
-            ORDER BY users.id, skills.created_at DESC
-            `,
-      [`%${skillType}%`]
-    );
-    return result.rows;
-  }
-  static async findAll() {
-    const result = await pool.query(`SELECT * FROM skills`);
-    return result.rows;
-  }
-  static async findOne(skillId) {
-    const result = await pool.query(`SELECT * FROM skills WHERE id = $1`, [
-      skillId,
-    ]);
-    return result.rows[0];
-  }
-
-  static async getSkillCategory(status) {
-    const result = await pool.query(
-      `
-            SELECT 
-                *
-            FROM skills_category
-            WHERE status = $1
-            `,
-      [status]
-    );
-    return result.rows;
-  }
-}
-
-module.exports = Skill;
+module.exports = mongoose.model("Skill", skillSchema);

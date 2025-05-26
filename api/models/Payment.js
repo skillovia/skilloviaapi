@@ -1,99 +1,111 @@
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+const mongoose = require("mongoose");
 
-class Payment {
-    static async addBillingMethod(userId, data) {
-        const { card_number, expiry_date, cvv, address, city, postal_code } = data;
+const billingMethodSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    card_number: {
+      type: String,
+      required: true,
+    },
+    expiry_date: {
+      type: String,
+      required: true,
+    },
+    cvv: {
+      type: String,
+      required: true,
+    },
+    address: String,
+    city: String,
+    postal_code: String,
+  },
+  { timestamps: true }
+);
 
-        const result = await pool.query(
-        'INSERT INTO billing_methods (user_id, card_number, expiry_date, cvv, address, city, postal_code) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
-        [userId, card_number, expiry_date, cvv, address, city, postal_code]
-        );
-        return result.rows[0];
-    }
+const withdrawalMethodSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    bank_name: {
+      type: String,
+      required: true,
+    },
+    account_number: {
+      type: String,
+      required: true,
+    },
+    account_name: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
+const BillingMethod = mongoose.model("BillingMethod", billingMethodSchema);
+const WithdrawalMethod = mongoose.model(
+  "WithdrawalMethod",
+  withdrawalMethodSchema
+);
 
-    static async getUserBillings(id) {
-        const result = await pool.query(
-            `
-            SELECT *
-            FROM billing_methods
-            WHERE user_id = $1
-            `,
-            [id]
-        );
-        return result.rows;
-    }
+// Adding statics to BillingMethod
+billingMethodSchema.statics.addBillingMethod = async function (userId, data) {
+  const billingMethod = new this({ userId, ...data });
+  return await billingMethod.save();
+};
 
+billingMethodSchema.statics.getUserBillings = async function (userId) {
+  return await this.find({ userId }).exec();
+};
 
-    static async deleteBillingMethod(userId, id) {
-        const result = await pool.query(
-            `DELETE FROM billing_methods 
-             WHERE id = $1 AND user_id = $2 
-             RETURNING *`,
-            [id, userId]
-        );
-    
-        return result.rows[0];
-    }
+billingMethodSchema.statics.deleteBillingMethod = async function (userId, id) {
+  return await this.findOneAndDelete({ _id: id, userId }).exec();
+};
 
+billingMethodSchema.statics.findByCardNumber = async function (
+  userId,
+  cardNumber
+) {
+  return await this.findOne({ userId, card_number: cardNumber }).exec();
+};
 
-    static async findByCardNumber(userId, cardNumber) {
-        const result = await pool.query(
-          'SELECT * FROM billing_methods WHERE user_id = $1 AND card_number = $2',
-          [userId,cardNumber]
-        );
-        return result.rows[0];
-    }
+// Adding statics to WithdrawalMethod
+withdrawalMethodSchema.statics.addWithdrawMethod = async function (
+  userId,
+  data
+) {
+  const withdrawMethod = new this({ userId, ...data });
+  return await withdrawMethod.save();
+};
 
+withdrawalMethodSchema.statics.getUserWithdrawalMethods = async function (
+  userId
+) {
+  return await this.find({ userId }).exec();
+};
 
-    // Add Withdrawal Methods
+withdrawalMethodSchema.statics.deleteWithdrawalMethod = async function (
+  userId,
+  id
+) {
+  return await this.findOneAndDelete({ _id: id, userId }).exec();
+};
 
-    static async addWithdrawMethod(userId, data) {
-        const { bank_name, account_number, account_name } = data;
+withdrawalMethodSchema.statics.findByAccNumber = async function (
+  userId,
+  accNumber
+) {
+  return await this.findOne({ userId, account_number: accNumber }).exec();
+};
 
-        const result = await pool.query(
-        'INSERT INTO withdrawal_methods (user_id, bank_name, account_number, account_name) VALUES ($1,$2,$3,$4) RETURNING *',
-        [userId, bank_name, account_number, account_name]
-        );
-        return result.rows[0];
-    }
-
-
-    static async getUserWithdrawalMethods(id) {
-        const result = await pool.query(
-            `
-            SELECT *
-            FROM withdrawal_methods
-            WHERE user_id = $1
-            `,
-            [id]
-        );
-        return result.rows;
-    }
-
-
-    static async deleteWithdrawalMethod(userId, id) {
-        const result = await pool.query(
-            `DELETE FROM withdrawal_methods 
-             WHERE id = $1 AND user_id = $2 
-             RETURNING *`,
-            [id, userId]
-        );
-    
-        return result.rows[0];
-    }
-
-
-    static async findByAccNumber(userId, accNumber) {
-        const result = await pool.query(
-          'SELECT * FROM withdrawal_methods WHERE user_id = $1 AND account_number = $2',
-          [userId,accNumber]
-        );
-        return result.rows[0];
-    }
-
-}
-
-
-module.exports = Payment;
+module.exports = {
+  BillingMethod,
+  WithdrawalMethod,
+};

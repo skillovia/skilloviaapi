@@ -1,103 +1,134 @@
-const pool = require('../config/db');
+const mongoose = require("mongoose");
 
-class Messages {
-    static async store(data) {
-        const { senderId, receiverId, content } = data;
+const messageSchema = new mongoose.Schema(
+  {
+    senderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    receiverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    markAsRead: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
+);
 
-        const result = await pool.query(
-        'INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1,$2,$3) RETURNING *',
-        [senderId, receiverId, content]
-        );
-        return result.rows[0];
-    }
+// Store a new message
+messageSchema.statics.store = async function (data) {
+  const message = new this(data);
+  return await message.save();
+};
 
+// Retrieve messages between two users ordered by createdAt
+messageSchema.statics.retrieveMessage = async function (senderId, receiverId) {
+  return await this.find({
+    $or: [
+      { senderId, receiverId },
+      { senderId: receiverId, receiverId: senderId },
+    ],
+  })
+    .sort({ createdAt: 1 })
+    .exec();
+};
 
-    static async retrieveMessage(senderId, receiverId) {
-        const result = await pool.query(
-            `SELECT * FROM messages 
-             WHERE (sender_id = $1 AND receiver_id = $2) 
-                OR (sender_id = $2 AND receiver_id = $1) 
-             ORDER BY created_at`,
-            [senderId, receiverId]
-        );
-        return result.rows;
-    }
+// Mark a message as read by ID
+messageSchema.statics.markAsRead = async function (messageId) {
+  return await this.findByIdAndUpdate(
+    messageId,
+    { markAsRead: true },
+    { new: true }
+  ).exec();
+};
 
+// Retrieve chat users with metadata for a specific user
+messageSchema.statics.retrieveChatUsers = async function (userId) {
+  // Aggregate to mimic your SQL query for chat users with unread count, last message, and last message time
+  return await this.aggregate([
+    {
+      $match: {
+        $or: [
+          { senderId: mongoose.Types.ObjectId(userId) },
+          { receiverId: mongoose.Types.ObjectId(userId) },
+        ],
+      },
+    },
+    {
+      $project: {
+        otherUserId: {
+          $cond: [
+            { $eq: ["$senderId", mongoose.Types.ObjectId(userId)] },
+            "$receiverId",
+            "$senderId",
+          ],
+        },
+        content: 1,
+        createdAt: 1,
+        markAsRead: 1,
+      },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $group: {
+        _id: "$otherUserId",
+        lastMessage: { $first: "$content" },
+        lastMessageTime: { $first: "$createdAt" },
+        unreadMessageCount: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$receiverId", mongoose.Types.ObjectId(userId)] },
+                  { $eq: ["$markAsRead", false] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: "$user",
+    },
+    {
+      $project: {
+        user_id: "$_id",
+        name: { $concat: ["$user.firstname", " ", "$user.lastname"] },
+        email: "$user.email",
+        photourl: "$user.photourl",
+        unreadMessageCount: 1,
+        lastMessage: 1,
+        lastMessageTime: 1,
+      },
+    },
+    {
+      $sort: { lastMessageTime: -1 },
+    },
+  ]).exec();
+};
 
-    static async markAsRead(messageId) {
-        const result = await pool.query(
-          `UPDATE messages 
-           SET mark_as_read = COALESCE($1, mark_as_read)
-           WHERE id = $2
-           RETURNING *`,
-          [true, messageId]
-        );
-        return result.rows[0];
-    }
+const Message = mongoose.model("Message", messageSchema);
 
-
-    /* static async retrieveChatUsers(userId) {
-        const result = await pool.query(
-            `SELECT DISTINCT 
-                u.id AS user_id,
-                (u.firstname || ' ' || u.lastname) AS name,
-                u.email,
-                u.photourl
-             FROM messages m
-             JOIN users u 
-                ON u.id = CASE 
-                            WHEN m.sender_id = $1 THEN m.receiver_id
-                            ELSE m.sender_id
-                          END
-             WHERE m.sender_id = $1 OR m.receiver_id = $1`,
-            [userId]
-        );
-        return result.rows;
-    } */
-
-    static async retrieveChatUsers(userId) {
-        const result = await pool.query(
-            `SELECT DISTINCT 
-                u.id AS user_id,
-                (u.firstname || ' ' || u.lastname) AS name,
-                u.email,
-                u.photourl,
-    
-                COALESCE(
-                    (SELECT COUNT(*) FROM messages 
-                        WHERE receiver_id = $1 AND sender_id = u.id AND mark_as_read = FALSE), 
-                    0
-                ) AS unreadMessageCount,
-    
-                (
-                    SELECT content FROM messages 
-                    WHERE (sender_id = $1 AND receiver_id = u.id) 
-                        OR (sender_id = u.id AND receiver_id = $1)
-                    ORDER BY created_at DESC 
-                    LIMIT 1
-                ) AS lastMessage,
-    
-                (
-                    SELECT created_at FROM messages 
-                    WHERE (sender_id = $1 AND receiver_id = u.id) 
-                        OR (sender_id = u.id AND receiver_id = $1)
-                    ORDER BY created_at DESC 
-                    LIMIT 1
-                ) AS lastMessageTime
-    
-                FROM messages m
-                JOIN users u 
-                ON u.id = CASE 
-                            WHEN m.sender_id = $1 THEN m.receiver_id
-                            ELSE m.sender_id
-                            END
-                WHERE m.sender_id = $1 OR m.receiver_id = $1`,
-            [userId]
-        );
-        return result.rows;
-    }
-        
-}
-
-
-module.exports = Messages;
+module.exports = Message;

@@ -1,50 +1,52 @@
-const pool = require("../config/db");
+const mongoose = require("mongoose");
 
-// class Review {
-//   static async create({ bookingId, reviewerId, revieweeId, rating, comment }) {
-//     const result = await pool.query(
-//       `INSERT INTO reviews (booking_id, reviewer_id, reviewee_id, rating, comment)
-//        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-//       [bookingId, reviewerId, revieweeId, rating, comment]
-//     );
-//     return result.rows[0];
-//   }
+const reviewSchema = new mongoose.Schema(
+  {
+    skillId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Skill",
+      required: true,
+    },
+    reviewerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    revieweeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
 
-//   static async getByBookingId(bookingId) {
-//     const result = await pool.query(
-//       `SELECT * FROM reviews WHERE booking_id = $1`,
-//       [bookingId]
-//     );
-//     return result.rows;
-//   }
+const Review = mongoose.model("Review", reviewSchema);
 
-//   static async getReviewsForUser(userId) {
-//     const result = await pool.query(
-//       `SELECT * FROM reviews WHERE reviewee_id = $1`,
-//       [userId]
-//     );
-//     return result.rows;
-//   }
-// }
-// models/Review.js
-
-class Review {
+class ReviewModel {
   static async create({ skillId, reviewerId, revieweeId, rating, comment }) {
-    const result = await pool.query(
-      `INSERT INTO reviews (skill_id, reviewer_id, reviewee_id, rating, comment)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [skillId, reviewerId, revieweeId, rating, comment]
-    );
-    return result.rows[0];
+    const review = new Review({
+      skillId,
+      reviewerId,
+      revieweeId,
+      rating,
+      comment,
+    });
+    return await review.save();
   }
 
   static async getReviewsForUser(userId) {
-    const result = await pool.query(
-      `SELECT * FROM reviews WHERE reviewee_id = $1`,
-      [userId]
-    );
-    return result.rows;
+    return await Review.find({ revieweeId: userId }).exec();
   }
 }
 
-module.exports = Review;
+module.exports = ReviewModel;

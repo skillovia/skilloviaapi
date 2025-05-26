@@ -1,70 +1,71 @@
-const pool = require("../config/db");
+const mongoose = require("mongoose");
 
-class Notifications {
-  // Store a new notification
-  static async store(userId, title, description) {
-    const result = await pool.query(
-      `INSERT INTO notifications (user_id, title, description) 
-             VALUES ($1, $2, $3) RETURNING *`,
-      [userId, title, description]
-    );
-    return result.rows[0];
-  }
+const notificationSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+    },
+    description: String,
+    markAsSeen: {
+      type: String,
+      enum: ["YES", "NO"],
+      default: "NO",
+    },
+  },
+  { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
+);
 
-  // Get all notifications for a specific user
-  static async getAllNotifications(userId) {
-    const result = await pool.query(
-      `SELECT * FROM notifications 
-             WHERE user_id = $1 
-             ORDER BY created_at DESC`,
-      [userId]
-    );
-    return result.rows;
-  }
+// Static methods
+notificationSchema.statics.store = async function (userId, title, description) {
+  const notification = new this({ userId, title, description });
+  return await notification.save();
+};
 
-  // Mark notification as seen
-  static async markAsSeen(notificationId) {
-    const result = await pool.query(
-      `UPDATE notifications 
-             SET mark_as_seen = 'YES' 
-             WHERE id = $1 
-             RETURNING *`,
-      [notificationId]
-    );
-    return result.rows[0];
-  }
+notificationSchema.statics.getAllNotifications = async function (userId) {
+  return await this.find({ userId }).sort({ createdAt: -1 }).exec();
+};
 
-  // Get all booking-related notifications for a user
-  static async getBookingNotifications(userId) {
-    const result = await pool.query(
-      `SELECT * FROM notifications 
-             WHERE user_id = $1 AND (title = 'Booking Created' OR title = 'New Booking Received') 
-             ORDER BY created_at DESC`,
-      [userId]
-    );
-    return result.rows;
-  }
+notificationSchema.statics.markAsSeen = async function (notificationId) {
+  return await this.findByIdAndUpdate(
+    notificationId,
+    { markAsSeen: "YES" },
+    { new: true }
+  ).exec();
+};
 
-  static async getFollowNotifications(userId) {
-    const result = await pool.query(
-      `SELECT * FROM notifications 
-       WHERE user_id = $1 AND title = 'New Follower' 
-       ORDER BY created_at DESC`,
-      [userId]
-    );
-    return result.rows;
-  }
+notificationSchema.statics.getBookingNotifications = async function (userId) {
+  return await this.find({
+    userId,
+    title: { $in: ["Booking Created", "New Booking Received"] },
+  })
+    .sort({ createdAt: -1 })
+    .exec();
+};
 
-  // Get all followee notifications for a specific user
-  static async getFolloweeNotifications(userId) {
-    const result = await pool.query(
-      `SELECT * FROM notifications 
-       WHERE user_id = $1 AND title = 'You Have a New Followee' 
-       ORDER BY created_at DESC`,
-      [userId]
-    );
-    return result.rows;
-  }
-}
+notificationSchema.statics.getFollowNotifications = async function (userId) {
+  return await this.find({
+    userId,
+    title: "New Follower",
+  })
+    .sort({ createdAt: -1 })
+    .exec();
+};
 
-module.exports = Notifications;
+notificationSchema.statics.getFolloweeNotifications = async function (userId) {
+  return await this.find({
+    userId,
+    title: "You Have a New Followee",
+  })
+    .sort({ createdAt: -1 })
+    .exec();
+};
+
+const Notification = mongoose.model("Notification", notificationSchema);
+
+module.exports = Notification;

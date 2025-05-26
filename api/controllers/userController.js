@@ -8,6 +8,7 @@ const {
   processSplitPayment,
 } = require("../utils/stripe");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const Wallet = require("../models/Wallet"); // your Wallet mongoose model
 
 exports.updateUser = async (req, res) => {
   const userId = req.params.id;
@@ -164,21 +165,23 @@ exports.changeAppearanceMode = async (req, res) => {
 //   }
 // };
 exports.getProfileByUserId = async (req, res) => {
-  const userId = parseInt(req.params.id);
+  const userId = req.params.id; // string id
 
   try {
     const data = await User.getProfileByUserId(userId);
 
-    if (data.length === 0) {
+    if (!data) {
+      // no profile found for given userId
       return res.status(404).json({
         status: "error",
         message: "User profile not found.",
-        data: data,
+        data: null,
       });
     }
 
+    // destructure properties from data object directly (not data[0])
     const {
-      id,
+      _id: id, // MongoDB _id, rename to id
       phone,
       email,
       firstname,
@@ -199,10 +202,11 @@ exports.getProfileByUserId = async (req, res) => {
       updated_at,
       referral_code,
       website,
-    } = data[0];
+      skills,
+    } = data;
 
-    // Map skills to an array
-    const skills = data[0].skills.map((item) => ({
+    // Map skills array if exists
+    const mappedSkills = (skills || []).map((item) => ({
       skill_id: item.skill_id,
       description: item.description,
       skill_type: item.skill_type,
@@ -215,7 +219,7 @@ exports.getProfileByUserId = async (req, res) => {
     }));
 
     const userProfile = {
-      id,
+      id: id.toString(),
       phone,
       email,
       firstname,
@@ -236,17 +240,17 @@ exports.getProfileByUserId = async (req, res) => {
       website,
       created_at,
       updated_at,
-      skills: skills,
+      skills: mappedSkills,
     };
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       message: "User profile retrieved successfully.",
       data: userProfile,
     });
   } catch (error) {
     console.error("Error in getProfileByUserId:", error);
-    res.status(500).json({
+    return res.status(500).json({
       status: "error",
       message: "Failed to retrieve profile.",
       error: error.message,
@@ -254,241 +258,14 @@ exports.getProfileByUserId = async (req, res) => {
   }
 };
 
-// exports.getBasiceProfileByUserId = async (req, res) => {
-//   const userId = parseInt(req.params.id);
-
-//   try {
-//     const data = await User.getProfileByUserId(userId);
-
-//     if (data.length === 0) {
-//       return res.status(404).json({
-//         status: "error",
-//         message: "User profile not found.",
-//         data: data,
-//       });
-//     }
-
-//     const {
-//       id,
-//       phone,
-//       email,
-//       firstname,
-//       lastname,
-//       gender,
-//       notification_type,
-//       appearance_mode,
-//       photourl,
-//       bio,
-//       total_followers,
-//       total_following,
-//       location,
-//       street,
-//       zip_code,
-//       referral_code,
-
-//       website,
-//     } = data[0];
-
-//     // Map skills to an array
-//     const skills = data[0].skills.map((item) => ({
-//       skill_id: item.skill_id,
-//       description: item.description,
-//       skill_type: item.skill_type,
-//       spark_token: item.spark_token || 0,
-//       experience_level: item.experience_level,
-//       hourly_rate: item.hourly_rate,
-//       thumbnail01: item.thumbnail01,
-//       thumbnail02: item.thumbnail02,
-//       thumbnail03: item.thumbnail03,
-//       thumbnail04: item.thumbnail04,
-//     }));
-
-//     const userProfile = {
-//       id,
-//       phone,
-//       email,
-//       firstname,
-//       lastname,
-//       gender,
-//       notification_type,
-//       appearance_mode,
-//       photourl,
-//       bio,
-//       total_followers,
-//       total_following,
-//       location,
-//       street,
-//       zip_code,
-//       referral_code,
-//       website,
-
-//       skills: skills,
-//     };
-
-//     res.status(200).json({
-//       status: "success",
-//       message: "User profile retrieved successfully.",
-//       data: userProfile,
-//     });
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ status: "error", message: "Failed to retrieve profile." });
-//   }
-// };
-
-// Controller function to compare SparkTokens
-// exports.compareSparkTokens = async (req, res) => {
-//   const { userId, skillId } = req.body; // userId: ID of the logged-in user, skillId: the skill for payment
-
-//   try {
-//     // Fetch the user's data (including their SparkTokens)
-//     const user = await User.findById(userId);
-//     const skill = await Skill.findSkill(skillId);
-
-//     // Check if user and skill exist
-//     if (!user || !skill) {
-//       return res.status(404).json({ message: "User or skill not found" });
-//     }
-
-//     const userTokens = user.sparkTokens; // User's available SparkTokens
-//     const skillTokensRequired = skill.sparkTokensRequired; // Tokens required for this skill
-
-//     // Compare the tokens
-//     if (userTokens >= skillTokensRequired) {
-//       // If user has enough tokens
-//       return res
-//         .status(200)
-//         .json({ message: "Sufficient SparkTokens", canPay: true });
-//     } else {
-//       // If user does not have enough tokens
-//       return res
-//         .status(400)
-//         .json({ message: "Insufficient SparkTokens", canPay: false });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-
-// exports.compareSparkTokens = async (req, res) => {
-//   const { userId, skillId } = req.body; // userId: ID of the logged-in user, skillId: the skill for payment
-
-//   try {
-//     // Log the incoming userId and skillId to verify
-//     console.log("Received userId:", userId, "and skillId:", skillId);
-
-//     // Fetch the user's data (including their SparkTokens)
-//     const user = await User.findById(userId); // Already correct
-//     const skill = await Skill.findSkill(skillId, userId); // ✅ Fixed
-
-//     // Log the user and skill objects to verify what is being fetched
-//     console.log("Fetched user data:", user);
-//     console.log("Fetched skill data:", skill);
-
-//     // Check if user and skill exist
-//     if (!user || !skill) {
-//       console.log("User or skill not found.");
-//       return res.status(404).json({ message: "User or skill not found" });
-//     }
-
-//     const userTokens = user.sparkTokens || 0; // User's available SparkTokens (if not defined, default to 0)
-//     const skillTokensRequired = skill.spark_token || 0; // Tokens required for this skill (ensure spark_token exists)
-
-//     // Log the tokens to verify they are being correctly retrieved
-//     console.log("User's available SparkTokens:", userTokens);
-//     console.log("Skill's required SparkTokens:", skillTokensRequired);
-
-//     // Ensure the user and skill both have tokens before proceeding
-//     if (skillTokensRequired === null || skillTokensRequired === undefined) {
-//       console.log("Skill does not have a valid spark_token.");
-//       return res
-//         .status(400)
-//         .json({ message: "Skill does not have a valid spark_token" });
-//     }
-
-//     if (userTokens === undefined) {
-//       console.log("User does not have SparkTokens.");
-//       return res
-//         .status(400)
-//         .json({ message: "User does not have SparkTokens" });
-//     }
-
-//     // Compare the tokens
-//     if (userTokens >= skillTokensRequired) {
-//       // If user has enough tokens
-//       console.log("User has sufficient SparkTokens.");
-//       return res
-//         .status(200)
-//         .json({ message: "Sufficient SparkTokens", canPay: true });
-//     } else {
-//       // If user does not have enough tokens
-//       console.log("User does not have sufficient SparkTokens.");
-//       return res
-//         .status(400)
-//         .json({ message: "Insufficient SparkTokens", canPay: false });
-//     }
-//   } catch (error) {
-//     console.error("Error occurred while comparing SparkTokens:", error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-// exports.compareSparkTokens = async (req, res) => {
-//   const { userId, skillId } = req.body;
-
-//   try {
-//     console.log("Received userId:", userId, "and skillId:", skillId);
-
-//     // Get the skill they want to "buy"
-//     const targetSkill = await Skill.findSkill(skillId, userId);
-//     if (!targetSkill) {
-//       return res.status(404).json({ message: "Skill not found" });
-//     }
-
-//     const requiredTokens = parseInt(targetSkill.spark_token) || 0;
-//     console.log("Skill's required SparkTokens:", requiredTokens);
-
-//     if (!requiredTokens || isNaN(requiredTokens)) {
-//       return res
-//         .status(400)
-//         .json({ message: "Invalid spark_token for target skill" });
-//     }
-
-//     // Get all of the user's skills (excluding the current skillId)
-//     const userSkills = await Skill.find({
-//       user_id: userId,
-//       _id: { $ne: skillId },
-//     });
-
-//     // Check if any of the user's skills have spark_token >= requiredTokens
-//     const hasSufficientSkill = userSkills.some((skill) => {
-//       const tokenValue = parseInt(skill.spark_token) || 0;
-//       return tokenValue >= requiredTokens;
-//     });
-
-//     if (hasSufficientSkill) {
-//       return res
-//         .status(200)
-//         .json({ message: "Sufficient SparkTokens", canPay: true });
-//     } else {
-//       return res
-//         .status(400)
-//         .json({ message: "Insufficient SparkTokens", canPay: false });
-//     }
-//   } catch (error) {
-//     console.error("Error occurred while comparing SparkTokens:", error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-
 exports.getBasiceProfileByUserId = async (req, res) => {
-  const userId = parseInt(req.params.id);
+  const userId = req.params.id;
 
   try {
     const data = await User.getProfileByUserId(userId);
+    // Assuming getProfileByUserId returns array of user(s), adjust if you use findOne
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       return res.status(404).json({
         status: "error",
         message: "User profile not found.",
@@ -496,38 +273,14 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       });
     }
 
-    // Fetch wallet info
-    const walletResult = await pool.query(
-      "SELECT * FROM wallet WHERE user_id = $1",
-      [userId]
-    );
-    const wallet = walletResult.rows[0] || {
+    const wallet = (await Wallet.findOne({ userId })) || {
       balance: 0,
       spark_tokens: 0,
       currency: "gbp",
     };
 
-    const {
-      id,
-      phone,
-      email,
-      firstname,
-      lastname,
-      gender,
-      notification_type,
-      appearance_mode,
-      photourl,
-      bio,
-      total_followers,
-      total_following,
-      location,
-      street,
-      zip_code,
-      referral_code,
-      website,
-    } = data[0];
-
-    const skills = data[0].skills.map((item) => ({
+    const user = data[0];
+    const skills = user.skills.map((item) => ({
       skill_id: item.skill_id,
       description: item.description,
       skill_type: item.skill_type,
@@ -541,23 +294,23 @@ exports.getBasiceProfileByUserId = async (req, res) => {
     }));
 
     const userProfile = {
-      id,
-      phone,
-      email,
-      firstname,
-      lastname,
-      gender,
-      notification_type,
-      appearance_mode,
-      photourl,
-      bio,
-      total_followers,
-      total_following,
-      location,
-      street,
-      zip_code,
-      referral_code,
-      website,
+      id: user.id,
+      phone: user.phone,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      gender: user.gender,
+      notification_type: user.notification_type,
+      appearance_mode: user.appearance_mode,
+      photourl: user.photourl,
+      bio: user.bio,
+      total_followers: user.total_followers,
+      total_following: user.total_following,
+      location: user.location,
+      street: user.street,
+      zip_code: user.zip_code,
+      referral_code: user.referral_code,
+      website: user.website,
       wallet: {
         balance: wallet.balance,
         spark_tokens: wallet.spark_tokens,
@@ -581,21 +334,14 @@ exports.getBasiceProfileByUserId = async (req, res) => {
 };
 
 exports.compareSparkTokens = async (req, res) => {
-  const userId = req.user.id; // securely from token (logged-in user's ID)
-  const { skillId, targetUserId } = req.body; // skillId and targetUserId passed in the request body
+  const userId = req.user.id;
+  const { skillId, targetUserId } = req.body;
 
   try {
-    console.log(
-      "Checking SparkTokens for logged-in userId:",
-      userId,
-      "target skillId (owned by another user, targetUserId):",
-      skillId,
-      "targetUserId:",
-      targetUserId
-    );
-
-    // Step 1: Get the target skill owned by the target user (targetUserId)
-    const targetSkill = await Skill.findSkill(skillId, targetUserId); // Find skill with skillId for targetUserId
+    const targetSkill = await Skill.findOne({
+      _id: skillId,
+      userId: targetUserId,
+    });
 
     if (!targetSkill) {
       return res
@@ -603,7 +349,6 @@ exports.compareSparkTokens = async (req, res) => {
         .json({ message: "Target skill not found for the other user" });
     }
 
-    // Step 2: Get the required tokens from the target skill (the other user's skill)
     const requiredTokens = parseInt(targetSkill.spark_token);
     if (!requiredTokens || isNaN(requiredTokens)) {
       return res
@@ -611,20 +356,12 @@ exports.compareSparkTokens = async (req, res) => {
         .json({ message: "Invalid spark_token in target skill" });
     }
 
-    // Step 3: Get all the skills of the logged-in user
-    const allUserSkillsQuery = await pool.query(
-      "SELECT * FROM skills WHERE user_id = $1", // Get skills of logged-in user
-      [userId]
-    );
-    const userSkills = allUserSkillsQuery.rows;
+    const userSkills = await Skill.find({ userId });
 
     if (!userSkills || userSkills.length === 0) {
       return res.status(400).json({ message: "User has no skills" });
     }
 
-    console.log("Logged-in user skills:", userSkills);
-
-    // Step 4: Check if the logged-in user has enough SparkTokens in any of their skills
     const hasEnoughTokens = userSkills.some((skill) => {
       const userToken = parseInt(skill.spark_token);
       return !isNaN(userToken) && userToken >= requiredTokens;
@@ -1099,69 +836,23 @@ exports.generateStripeAccountLink = async (req, res) => {
   }
 };
 
-// exports.processSplitPayment = async (req, res) => {
-//   const userId = req.user.id;
-//   const { customerEmail, amount, currency, stripeAccountId } = req.body;
-
-//   if (
-//     stripeAccountId != null &&
-//     amount != null &&
-//     currency != null &&
-//     customerEmail != null
-//   ) {
-//     try {
-//       const paymentIntent = await processSplitPayment(
-//         customerEmail,
-//         amount,
-//         currency,
-//         stripeAccountId
-//       );
-
-//       if (paymentIntent) {
-//         res.status(200).json({
-//           status: "success",
-//           message: "Payment Intent Created Successfully",
-//           data: paymentIntent,
-//         });
-//       }
-//     } catch (error) {
-//       res.status(500).json({
-//         status: "error",
-//         message: "Failed to generate Payment Intent",
-//         data: error.detail,
-//       });
-//     }
-//   } else {
-//     res.status(400).json({
-//       status: "error",
-//       message: "customerEmail, amount, currency, stripeAccountId are required",
-//       data: null,
-//     });
-//   }
-// };
 exports.processSplitPayment = async (req, res) => {
   const userId = req.user.id;
   const { amount, currency, stripeAccountId, customerEmail, paymentMethod } =
     req.body;
 
   try {
-    // Wallet method
     if (paymentMethod === "wallet" || paymentMethod === "spark_token") {
-      const wallet = await pool.query(
-        "SELECT * FROM wallet WHERE user_id = $1",
-        [userId]
-      );
+      const userWallet = await Wallet.findOne({ userId });
 
-      if (wallet.rows.length === 0) {
+      if (!userWallet) {
         return res.status(404).json({ message: "Wallet not found" });
       }
 
-      const userWallet = wallet.rows[0];
-      const currentBalance = parseFloat(
+      const currentBalance =
         paymentMethod === "wallet"
           ? userWallet.balance
-          : userWallet.spark_tokens
-      );
+          : userWallet.spark_tokens;
 
       if (currentBalance < amount) {
         return res
@@ -1169,20 +860,16 @@ exports.processSplitPayment = async (req, res) => {
           .json({ message: "Insufficient balance in wallet." });
       }
 
-      // Deduct from appropriate wallet
       if (paymentMethod === "wallet") {
-        await pool.query(
-          "UPDATE wallet SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2",
-          [amount, userId]
-        );
+        userWallet.balance -= amount;
       } else if (paymentMethod === "spark_token") {
-        await pool.query(
-          "UPDATE wallet SET spark_tokens = spark_tokens - $1, updated_at = NOW() WHERE user_id = $2",
-          [amount, userId]
-        );
+        userWallet.spark_tokens -= amount;
       }
 
-      // If using wallet, simulate success (you can log internally)
+      userWallet.updatedAt = new Date();
+
+      await userWallet.save();
+
       return res.status(200).json({
         status: "success",
         message: `Payment of £${amount} made from ${paymentMethod.replace(
@@ -1192,7 +879,6 @@ exports.processSplitPayment = async (req, res) => {
       });
     }
 
-    // Stripe payment method (split payment)
     if (paymentMethod === "stripe") {
       const paymentIntent = await processSplitPayment(
         customerEmail,

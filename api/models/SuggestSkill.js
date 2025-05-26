@@ -1,82 +1,66 @@
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+// models/SuggestSkill.js
+const mongoose = require("mongoose");
 
-class SuggestSkill {
-    static async create(userId, data) {
-        const { name } = data;
-        const result = await pool.query(
-          'INSERT INTO suggest_skills (user_id, name) VALUES ($1, $2) RETURNING *',
-          [userId, name]
-        );
-        return result.rows[0];
-    }
+const suggestSkillSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // assumes you have a User model
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    approval_status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+  },
+  { timestamps: true }
+);
 
+// Static Methods
 
-    static async updateStatus(id, updates) {
-        const { status } = updates;
-    
-        const result = await pool.query(
-          `UPDATE suggest_skills 
-           SET approval_status = COALESCE($1, approval_status)
-           WHERE id = $2
-           RETURNING *`,
-          [status, id]
-        );
-        return result.rows[0];
-    }
+// Create a new suggested skill
+suggestSkillSchema.statics.createSuggestion = async function (userId, data) {
+  return await this.create({ userId, ...data });
+};
 
+// Update status of a suggested skill
+suggestSkillSchema.statics.updateStatus = async function (id, updates) {
+  const { status } = updates;
+  return await this.findByIdAndUpdate(
+    id,
+    { approval_status: status },
+    { new: true }
+  );
+};
 
-    static async delete(id) {
-        const result = await pool.query(
-            `DELETE FROM suggest_skills 
-             WHERE id = $1
-             RETURNING *`,
-            [id]
-        );
-    
-        return result.rows[0];
-    }
+// Delete a suggestion
+suggestSkillSchema.statics.deleteSuggestion = async function (id) {
+  return await this.findByIdAndDelete(id);
+};
 
+// Find a suggestion by name
+suggestSkillSchema.statics.findSuggestedSkill = async function (name) {
+  return await this.findOne({ name });
+};
 
-    static async findSuggestedSkill(data) {
-        const { name } = data;
+// Retrieve all suggestions by status with user info populated
+suggestSkillSchema.statics.retrieveSuggestedSkills = async function (status) {
+  return await this.find({ approval_status: status }).populate({
+    path: "userId",
+    select: "firstname lastname email", // adjust based on your User model
+  });
+};
 
-        const result = await pool.query(
-          'SELECT * FROM suggest_skills WHERE name = $1',
-          [name]
-        );
-        return result.rows[0];
-    }
+// Find a suggestion by ID
+suggestSkillSchema.statics.findSuggestedSkillById = async function (id) {
+  return await this.findById(id);
+};
 
-
-    static async retrieveSuggestedSkills(status) {
-        const result = await pool.query(
-            `
-            SELECT 
-                suggest_skills.*, 
-                users.id AS creator_id, 
-                (users.firstname || ' ' || users.lastname) AS creator_name, 
-                users.email AS creator_email 
-            FROM suggest_skills 
-            INNER JOIN users ON suggest_skills.user_id = users.id
-            WHERE suggest_skills.approval_status = $1
-            `,
-            [status]
-        );
-        return result.rows;
-    }
-
-
-    static async findSuggestedSkillById(id) {
-        const result = await pool.query(
-          'SELECT * FROM suggest_skills WHERE id = $1',
-          [id]
-        );
-        return result.rows[0];
-    }
-    
-
-}
-
+const SuggestSkill = mongoose.model("SuggestSkill", suggestSkillSchema);
 
 module.exports = SuggestSkill;

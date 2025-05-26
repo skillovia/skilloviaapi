@@ -1,104 +1,95 @@
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+const mongoose = require("mongoose");
 
-class Kyc {
-    static async upload(userId, method, type, file) {
+const kycSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    kyc_method: {
+      type: String,
+      required: true,
+    },
+    kyc_id_type: {
+      type: String,
+      required: true,
+    },
+    document_url: {
+      type: String,
+      required: true,
+    },
+    approval_status: {
+      type: String,
+      default: "pending", // example default
+    },
+  },
+  { timestamps: true }
+);
 
-        const result = await pool.query(
-        'INSERT INTO kyc (user_id, kyc_method, kyc_id_type, document_url) VALUES ($1,$2,$3,$4) RETURNING *',
-        [userId, method, type, file]
-        );
-        return result.rows[0];
-    }
+// Upload new KYC document
+kycSchema.statics.upload = async function (userId, method, type, file) {
+  const kyc = new this({
+    userId,
+    kyc_method: method,
+    kyc_id_type: type,
+    document_url: file,
+  });
+  return await kyc.save();
+};
 
+// Re-upload / update KYC document by id with optional updates
+kycSchema.statics.reupload = async function (id, updates) {
+  const updated = await this.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        ...(updates.kyc_method && { kyc_method: updates.kyc_method }),
+        ...(updates.kyc_id_type && { kyc_id_type: updates.kyc_id_type }),
+        ...(updates.document_url && { document_url: updates.document_url }),
+      },
+    },
+    { new: true }
+  );
+  return updated;
+};
 
-    static async reupload(id, updates) {
-        const { kyc_method, kyc_id_type, document_url} = updates;
+// Change approval status by id
+kycSchema.statics.changeStatus = async function (id, status) {
+  const updated = await this.findByIdAndUpdate(
+    id,
+    { approval_status: status },
+    { new: true }
+  );
+  return updated;
+};
 
-        const result = await pool.query(
-        `UPDATE kyc 
-        SET kyc_method = COALESCE($1, kyc_method),
-            kyc_id_type = COALESCE($2, kyc_id_type),
-            document_url = COALESCE($3, document_url)
-        WHERE id = $4 RETURNING *`,
-        [kyc_method, kyc_id_type, document_url, id]
-        );
-        return result.rows[0];
-    }
+// Get all KYC docs by userId
+kycSchema.statics.getKycByUserId = async function (userId) {
+  return await this.find({ userId }).exec();
+};
 
+// Get KYC docs by method and approval status, populated with user info
+kycSchema.statics.getKycs = async function (method, status) {
+  return await this.find({ kyc_method: method, approval_status: status })
+    .populate("userId", "firstname lastname email phone gender") // adjust fields as needed
+    .exec();
+};
 
-    static async changeStatus(id, status) {
+// Get KYC docs by userId and method
+kycSchema.statics.getUserKyc = async function (userId, method) {
+  return await this.find({ userId, kyc_method: method }).exec();
+};
 
-        const result = await pool.query(
-        `UPDATE kyc 
-        SET approval_status = COALESCE($1, approval_status)
-        WHERE id = $2 RETURNING *`,
-        [status, id]
-        );
-        return result.rows[0];
-    }
+// Delete KYC doc by id, userId and method
+kycSchema.statics.deleteKyc = async function (userId, id, method) {
+  return await this.findOneAndDelete({
+    _id: id,
+    userId,
+    kyc_method: method,
+  }).exec();
+};
 
-
-    static async getKycByUserId(id) {
-        const result = await pool.query(
-            `
-            SELECT 
-                *
-            FROM kyc
-            WHERE user_id = $1
-            `,
-            [id]
-        );
-        return result.rows;
-    }
-
-
-    static async getKycs(method, status) {
-        const result = await pool.query(
-            `
-            SELECT 
-                kyc.*,
-                users.id AS user_id,
-                users.firstname AS firstname,
-                users.lastname AS lastname,
-                users.email,
-                users.phone,
-                users.gender 
-            FROM kyc
-            INNER JOIN users ON users.id = kyc.user_id
-            WHERE kyc.kyc_method = $1 AND kyc.approval_status = $2
-            `,
-            [method, status]
-        );
-        return result.rows;
-    }
-
-
-    static async getUserKyc(id, method) {
-        const result = await pool.query(
-            `
-            SELECT *
-            FROM kyc
-            WHERE user_id = $1 AND kyc_method = $2
-            `,
-            [id, method]
-        );
-        return result.rows;
-    }
-
-
-    static async deleteKyc(userId, id, method) {
-        const result = await pool.query(
-            `DELETE FROM kyc 
-             WHERE id = $1 AND user_id = $2 AND kyc_method = $3
-             RETURNING *`,
-            [id, userId, method]
-        );
-    
-        return result.rows[0];
-    }
-
-}
-
+const Kyc = mongoose.model("Kyc", kycSchema);
 
 module.exports = Kyc;

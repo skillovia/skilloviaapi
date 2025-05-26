@@ -1,32 +1,46 @@
-const pool = require("../config/db");
+const mongoose = require("mongoose");
 
-class Dispute {
-  static async create({ userId, bookingId, message, fileUrl }) {
-    const result = await pool.query(
-      `INSERT INTO disputes (user_id, booking_id, message, file_url)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [userId, bookingId, message, fileUrl]
-    );
+const disputeSchema = new mongoose.Schema(
+  {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    booking_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
+      required: true,
+    },
+    message: { type: String, required: true },
+    file_url: { type: String },
+  },
+  { timestamps: true }
+);
 
-    return result.rows[0];
-  }
+disputeSchema.statics.createDispute = async function ({
+  userId,
+  bookingId,
+  message,
+  fileUrl,
+}) {
+  const dispute = new this({
+    user_id: userId,
+    booking_id: bookingId,
+    message,
+    file_url: fileUrl,
+  });
+  return await dispute.save();
+};
 
-  static async getByUser(userId) {
-    const result = await pool.query(
-      `SELECT * FROM disputes WHERE user_id = $1 ORDER BY created_at DESC`,
-      [userId]
-    );
+disputeSchema.statics.getByUser = async function (userId) {
+  return await this.find({ user_id: userId }).sort({ createdAt: -1 }).exec();
+};
 
-    return result.rows;
-  }
+disputeSchema.statics.getAll = async function () {
+  return await this.find().sort({ createdAt: -1 }).exec();
+};
 
-  static async getAll() {
-    const result = await pool.query(
-      `SELECT * FROM disputes ORDER BY created_at DESC`
-    );
-    return result.rows;
-  }
-}
+const Dispute = mongoose.model("Dispute", disputeSchema);
 
 module.exports = Dispute;
