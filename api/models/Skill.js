@@ -57,6 +57,11 @@ skillSchema.statics.retrieveUserSkills = function (userId) {
   );
 };
 
+skillSchema.statics.getSkillCategory = async function () {
+  // Return all skill categories, no status filtering
+  return this.find({});
+};
+
 // Update the approval status of a skill
 skillSchema.statics.updatePublishedStatus = function (skillId, status) {
   return this.findByIdAndUpdate(
@@ -115,7 +120,6 @@ skillSchema.statics.deleteThumbnail = function (
 skillSchema.statics.searchBySkillType = function (skillType) {
   return this.find({
     skill_type: { $regex: skillType, $options: "i" },
-    approval_status: "published",
   }).populate("userId", "firstname lastname email photourl");
 };
 
