@@ -1,6 +1,8 @@
 const Skill = require("../models/Skill");
 const pool = require("../config/db");
+
 const User = require("../models/User");
+const StripeAccount = require("../models/Stripe");
 const bcrypt = require("bcrypt");
 const {
   createConnectedAccount,
@@ -725,13 +727,16 @@ exports.createStripeAccount = async (req, res) => {
 
   if (userId != null) {
     try {
-      const check = await User.checkStripeAccountExist(userId);
+      const check = await StripeAccount.checkStripeAccountExist(userId);
 
       if (check == null) {
         const account = await createConnectedAccount(email);
 
         if (account) {
-          const user = await User.createStripeAccount(userId, account.id);
+          const user = await StripeAccount.createStripeAccount(
+            userId,
+            account.id
+          );
           res.status(201).json({
             status: "success",
             message: "Stripe account created successfully.",
