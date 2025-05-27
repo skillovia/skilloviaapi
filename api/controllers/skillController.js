@@ -78,7 +78,7 @@ exports.createSkill = async (req, res) => {
 
   try {
     // Create skill in database
-    const skill = await Skill.create(userId, {
+    const skill = await Skill.createSkill(userId, {
       ...data,
       spark_token: finalSparkToken, // Pass the correctly parsed finalSparkToken
     });
@@ -212,12 +212,36 @@ exports.retrievePublishedSkill = async (req, res) => {
   }
 };
 
+// exports.retrieveUserSkill = async (req, res) => {
+//   const status = "published";
+//   const userId = req.user.id;
+
+//   try {
+//     const skill = await Skill.retrieveUserSkill(userId);
+//     if (skill != null) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "skills retrieved successfully.",
+//         data: skill,
+//       });
+//     } else {
+//       res
+//         .status(200)
+//         .json({ status: "success", message: "No record found", data: null });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve skills",
+//       data: error,
+//     });
+//   }
+// };
 exports.retrieveUserSkill = async (req, res) => {
-  const status = "published";
   const userId = req.user.id;
 
   try {
-    const skill = await Skill.retrieveUserSkill(userId);
+    const skill = await Skill.retrieveUserSkills(userId); // FIXED here
     if (skill != null) {
       res.status(200).json({
         status: "success",
@@ -230,10 +254,11 @@ exports.retrieveUserSkill = async (req, res) => {
         .json({ status: "success", message: "No record found", data: null });
     }
   } catch (error) {
+    console.error("Error retrieving skills:", error); // Add for debugging
     res.status(500).json({
       status: "error",
       message: "Failed to retrieve skills",
-      data: error,
+      data: error.message, // send only message for safety
     });
   }
 };

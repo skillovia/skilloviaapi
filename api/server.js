@@ -21,7 +21,7 @@ const messageRoute = require("./routes/messageRoute");
 const adminRoutes = require("./routes/adminRoutes");
 const bookingsRoutes = require("./routes/bookingsRoutes");
 const chatSocketHandler = require("./sockets/chat");
-
+const cookieParser = require("cookie-parser");
 require("./passport");
 
 const app = express();
@@ -61,6 +61,8 @@ app.use(
     ],
   })
 );
+
+app.use(cookieParser());
 
 app.options("*", cors());
 app.use(bodyParser.json({ limit: "50mb" }));

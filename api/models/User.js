@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: true,
+      // required: true,
       unique: true,
     },
     gender: { type: String },
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      // required: true,
       minlength: 8,
     },
     referral_code: { type: String },
