@@ -727,7 +727,7 @@ exports.createStripeAccount = async (req, res) => {
 
   if (userId != null) {
     try {
-      const check = await StripeAccount.checkStripeAccountExist(userId);
+      const check = await StripeAccount.createStripeAccount(userId);
 
       if (check == null) {
         const account = await createConnectedAccount(email);
@@ -751,10 +751,11 @@ exports.createStripeAccount = async (req, res) => {
         });
       }
     } catch (error) {
+      console.error("Stripe account creation error:", error);
       res.status(500).json({
         status: "error",
         message: "Account creation failed.",
-        data: error.detail,
+        data: error.message || error, // More helpful
       });
     }
   }
