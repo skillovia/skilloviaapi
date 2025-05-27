@@ -22,7 +22,7 @@ const s3 = new S3Client({
 const upload = multer({
   storage: multerS3({
     s3,
-    bucket: "skillovia",
+    bucket: "eduprosolution",
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },

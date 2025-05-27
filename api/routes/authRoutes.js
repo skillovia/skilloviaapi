@@ -77,7 +77,7 @@ router.get(
 
     const token = req.user.token;
     res.redirect(
-      `http://localhost:5173/explore?accessToken=${token}&refreshToken=${token}`
+      `https://skillovia.com/explore?accessToken=${token}&refreshToken=${token}`
     );
   }
 );

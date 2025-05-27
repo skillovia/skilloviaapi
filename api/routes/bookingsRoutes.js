@@ -54,7 +54,7 @@ const s3 = new S3Client({
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: "skillovia", // Your S3 bucket name
+    bucket: "eduprosolution", // Your S3 bucket name
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
@@ -69,14 +69,21 @@ const upload = multer({
 });
 
 // router.post('/', verify, upload.single('file'), createBookings);
-router.post("/", verify, upload.fields([{ name: "thumbnails", maxCount: 4 }]), async (req, res) => {
-  try {
-    await createBookings(req, res);
-  } catch (err) {
-    console.error("Error creating booking:", err);
-    res.status(500).json({ status: "error", message: "Internal Server Error" });
+router.post(
+  "/",
+  verify,
+  upload.fields([{ name: "thumbnails", maxCount: 4 }]),
+  async (req, res) => {
+    try {
+      await createBookings(req, res);
+    } catch (err) {
+      console.error("Error creating booking:", err);
+      res
+        .status(500)
+        .json({ status: "error", message: "Internal Server Error" });
+    }
   }
-});
+);
 router.put("/:id", verify, upload.single("file"), updateBookings);
 router.put("/reject/:id", verify, rejectBookings);
 router.put("/accept/:id", verify, acceptBookings);

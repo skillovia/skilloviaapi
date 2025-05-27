@@ -65,7 +65,7 @@ const s3 = new S3Client({
 
 const storage = multerS3({
   s3: s3,
-  bucket: "skillovia",
+  bucket: "eduprosolution",
   metadata: function (req, file, cb) {
     cb(null, { fieldName: file.fieldname });
   },
