@@ -721,45 +721,45 @@ exports.getUserNotifications = async (req, res) => {
   }
 };
 
-exports.createStripeAccount = async (req, res) => {
-  const userId = req.user.id;
-  const email = req.user.email;
+// exports.createStripeAccount = async (req, res) => {
+//   const userId = req.user.id;
+//   const email = req.user.email;
 
-  if (userId != null) {
-    try {
-      const check = await StripeAccount.createStripeAccount(userId);
+//   if (userId != null) {
+//     try {
+//       const check = await StripeAccount.createStripeAccount(userId);
 
-      if (check == null) {
-        const account = await createConnectedAccount(email);
+//       if (check == null) {
+//         const account = await createConnectedAccount(email);
 
-        if (account) {
-          const user = await StripeAccount.createStripeAccount(
-            userId,
-            account.id
-          );
-          res.status(201).json({
-            status: "success",
-            message: "Stripe account created successfully.",
-            data: user,
-          });
-        }
-      } else {
-        res.status(400).json({
-          status: "error",
-          message: "User already has a stripe account",
-          data: null,
-        });
-      }
-    } catch (error) {
-      console.error("Stripe account creation error:", error);
-      res.status(500).json({
-        status: "error",
-        message: "Account creation failed.",
-        data: error.message || error, // More helpful
-      });
-    }
-  }
-};
+//         if (account) {
+//           const user = await StripeAccount.createStripeAccount(
+//             userId,
+//             account.id
+//           );
+//           res.status(201).json({
+//             status: "success",
+//             message: "Stripe account created successfully.",
+//             data: user,
+//           });
+//         }
+//       } else {
+//         res.status(400).json({
+//           status: "error",
+//           message: "User already has a stripe account",
+//           data: null,
+//         });
+//       }
+//     } catch (error) {
+//       console.error("Stripe account creation error:", error);
+//       res.status(500).json({
+//         status: "error",
+//         message: "Account creation failed.",
+//         data: error.message || error, // More helpful
+//       });
+//     }
+//   }
+// };
 
 // exports.generateStripeAccountLink = async (req, res) => {
 //   console.log("Request Body:", req.body); // 👀 Debugging line
@@ -798,6 +798,60 @@ exports.createStripeAccount = async (req, res) => {
 //       .json({ status: "error", message: "Account is required", data: null });
 //   }
 // };
+exports.createStripeAccount = async (req, res) => {
+  const userId = req.user.id;
+  const email = req.user.email;
+
+  if (userId != null) {
+    try {
+      // ✅ First check if user already has a stripe account
+      const check = await StripeAccount.findByUserId(userId);
+
+      if (!check) {
+        // ✅ Create Stripe connected account
+        const account = await createConnectedAccount(email);
+
+        if (account) {
+          // ✅ Now save to MongoDB with both userId and account.id
+          const userStripeAccount = await StripeAccount.createStripeAccount(
+            userId,
+            account.id
+          );
+
+          res.status(201).json({
+            status: "success",
+            message: "Stripe account created successfully.",
+            data: userStripeAccount,
+          });
+        } else {
+          res.status(500).json({
+            status: "error",
+            message: "Stripe account creation with Stripe failed.",
+            data: null,
+          });
+        }
+      } else {
+        res.status(400).json({
+          status: "error",
+          message: "User already has a stripe account",
+          data: null,
+        });
+      }
+    } catch (error) {
+      console.error("Stripe account creation error:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Account creation failed.",
+        data: error.message || error,
+      });
+    }
+  } else {
+    res.status(400).json({
+      status: "error",
+      message: "User ID is missing",
+    });
+  }
+};
 
 exports.generateStripeAccountLink = async (req, res) => {
   console.log("Request Body:", req.body); // ✅ Debugging line
