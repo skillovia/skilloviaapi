@@ -12,13 +12,13 @@ const userSchema = new mongoose.Schema(
     fullname: { type: String }, // if you need it
     email: {
       type: String,
-      required: true,
-      unique: true,
+      // required: true,
+      // unique: true,
     },
     phone: {
       type: String,
       // required: true,
-      unique: true,
+      // unique: true,
     },
     gender: { type: String },
     location: { type: String },
