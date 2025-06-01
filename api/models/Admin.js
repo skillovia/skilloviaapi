@@ -409,6 +409,34 @@ class Admin {
     return await newUser.save();
   }
 
+  //   static async addSkillCategory(data, thumbnail) {
+  //     const { title, description } = data;
+  //     const status = "published";
+
+  //     const result = await pool.query(
+  //       `
+  //             INSERT INTO skills_category (
+  //             title, description, thumbnail, status
+  //             ) VALUES ($1, $2, $3, $4)
+  //             RETURNING *
+  //             `,
+  //       [title, description, thumbnail, status]
+  //     );
+
+  //     return result.rows[0];
+  //   }
+
+  static async addSkillCategory(data, thumbnail) {
+    const { title, description } = data;
+    const skillCategory = new SkillCategory({
+      title,
+      description,
+      thumbnail,
+      status: "published",
+    });
+
+    return await skillCategory.save();
+  }
   static async checkUserExist(phone, email) {
     return await User.findOne({
       $or: [{ phone }, { email }],

@@ -1,6 +1,4 @@
 const Skill = require("../models/Skill");
-const pool = require("../config/db");
-
 const User = require("../models/User");
 const StripeAccount = require("../models/Stripe");
 const bcrypt = require("bcrypt");
@@ -260,18 +258,95 @@ exports.getProfileByUserId = async (req, res) => {
   }
 };
 
+// exports.getBasiceProfileByUserId = async (req, res) => {
+//   const userId = req.params.id;
+
+//   try {
+//     const data = await User.getProfileByUserId(userId);
+//     // Assuming getProfileByUserId returns array of user(s), adjust if you use findOne
+
+//     if (!data || data.length === 0) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "User profile not found.",
+//         data: data,
+//       });
+//     }
+
+//     const wallet = (await Wallet.findOne({ userId })) || {
+//       balance: 0,
+//       spark_tokens: 0,
+//       currency: "gbp",
+//     };
+
+//     const user = data[0];
+//     const skills =
+//       user.skills?.map((item) => ({
+//         skill_id: item.skill_id,
+//         description: item.description,
+//         skill_type: item.skill_type,
+//         spark_token: item.spark_token || 0,
+//         experience_level: item.experience_level,
+//         hourly_rate: item.hourly_rate,
+//         thumbnail01: item.thumbnail01,
+//         thumbnail02: item.thumbnail02,
+//         thumbnail03: item.thumbnail03,
+//         thumbnail04: item.thumbnail04,
+//       })) || [];
+
+//     const userProfile = {
+//       id: user.id,
+//       phone: user.phone,
+//       email: user.email,
+//       firstname: user.firstname,
+//       lastname: user.lastname,
+//       gender: user.gender,
+//       notification_type: user.notification_type,
+//       appearance_mode: user.appearance_mode,
+//       photourl: user.photourl,
+//       bio: user.bio,
+//       total_followers: user.total_followers,
+//       total_following: user.total_following,
+//       location: user.location,
+//       street: user.street,
+//       zip_code: user.zip_code,
+//       referral_code: user.referral_code,
+//       website: user.website,
+//       wallet: {
+//         balance: wallet.balance,
+//         spark_tokens: wallet.spark_tokens,
+//         currency: wallet.currency,
+//       },
+//       skills,
+//     };
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "User profile retrieved successfully.",
+//       data: userProfile,
+//     });
+//   } catch (error) {
+//     console.error("Profile error:", error);
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve profile.",
+//     });
+//   }
+// };
 exports.getBasiceProfileByUserId = async (req, res) => {
   const userId = req.params.id;
 
   try {
     const data = await User.getProfileByUserId(userId);
-    // Assuming getProfileByUserId returns array of user(s), adjust if you use findOne
+    console.log("Fetched data:", data);
 
-    if (!data || data.length === 0) {
+    const user = Array.isArray(data) ? data[0] : data;
+
+    if (!user) {
       return res.status(404).json({
         status: "error",
-        message: "User profile not found.",
-        data: data,
+        message: "User profile not found or invalid format.",
+        data,
       });
     }
 
@@ -281,19 +356,20 @@ exports.getBasiceProfileByUserId = async (req, res) => {
       currency: "gbp",
     };
 
-    const user = data[0];
-    const skills = user.skills.map((item) => ({
-      skill_id: item.skill_id,
-      description: item.description,
-      skill_type: item.skill_type,
-      spark_token: item.spark_token || 0,
-      experience_level: item.experience_level,
-      hourly_rate: item.hourly_rate,
-      thumbnail01: item.thumbnail01,
-      thumbnail02: item.thumbnail02,
-      thumbnail03: item.thumbnail03,
-      thumbnail04: item.thumbnail04,
-    }));
+    const skills = Array.isArray(user.skills)
+      ? user.skills.map((item) => ({
+          skill_id: item.skill_id,
+          description: item.description,
+          skill_type: item.skill_type,
+          spark_token: item.spark_token || 0,
+          experience_level: item.experience_level,
+          hourly_rate: item.hourly_rate,
+          thumbnail01: item.thumbnail01,
+          thumbnail02: item.thumbnail02,
+          thumbnail03: item.thumbnail03,
+          thumbnail04: item.thumbnail04,
+        }))
+      : [];
 
     const userProfile = {
       id: user.id,
