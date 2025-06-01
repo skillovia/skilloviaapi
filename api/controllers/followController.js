@@ -19,8 +19,13 @@ exports.followAccount = async (req, res) => {
       const user = await Follows.follow(userId, follower_id);
 
       // Create a notification for the followed user
+      // await Notification.create({
+      //   user_id: follower_id,
+      //   title: "New Follower",
+      //   description: `User ${userId} started following you.`,
+      // });
       await Notification.create({
-        user_id: follower_id,
+        userId: follower_id,
         title: "New Follower",
         description: `User ${userId} started following you.`,
       });
