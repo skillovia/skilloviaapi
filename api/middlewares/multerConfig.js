@@ -6,6 +6,7 @@ const path = require("path");
 // Initialize S3 client
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
+  endpoint: `https://s3.${region}.amazonaws.com`,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
