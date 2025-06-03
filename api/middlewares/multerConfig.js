@@ -3,17 +3,20 @@ const multerS3 = require("multer-s3");
 const { S3Client } = require("@aws-sdk/client-s3");
 const path = require("path");
 
+// Get region from environment variable
+const awsRegion = process.env.AWS_REGION;
+
 // Initialize S3 client
 const s3 = new S3Client({
-  region: process.env.AWS_REGION,
-  endpoint: `https://s3.${region}.amazonaws.com`,
+  region: awsRegion,
+  endpoint: `https://s3.${awsRegion}.amazonaws.com`, // ✅ Fixed this line
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-// Configure Multer to Upload to S3
+// Configure Multer to upload to S3
 const upload = multer({
   storage: multerS3({
     s3: s3,
