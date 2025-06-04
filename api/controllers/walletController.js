@@ -69,6 +69,28 @@ exports.fundWallet = async (req, res) => {
     });
   }
 };
+exports.confirmFunding = async (req, res) => {
+  const userId = req.user.id;
+  const { amount } = req.body;
+
+  try {
+    await Wallet.findOneAndUpdate(
+      { user: userId },
+      {
+        $inc: { balance: amount, spark_tokens: amount },
+        $set: { updated_at: new Date() },
+      }
+    );
+
+    res.status(200).json({ message: "Wallet funded successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to update wallet", error: error.message });
+  }
+};
+
+// Webhook endpoint example (Stripe docs)
 
 // PAY FOR SKILL WITH WALLET
 exports.payWithWallet = async (req, res) => {
