@@ -33,6 +33,42 @@ exports.createWalletForUser = async (req, res) => {
 };
 
 // FUND WALLET
+// exports.fundWallet = async (req, res) => {
+//   const userId = req.user.id;
+//   const { amount } = req.body;
+
+//   try {
+//     const user = await User.findById(userId).select("email");
+//     const customerEmail = user?.email;
+
+//     if (!customerEmail) {
+//       return res.status(404).json({ message: "User email not found" });
+//     }
+
+//     const clientSecret = await createWalletFundingIntent(
+//       customerEmail,
+//       amount, // already in pounds
+//       "gbp"
+//     );
+
+//     // Update wallet balance and spark_tokens
+//     await Wallet.findOneAndUpdate(
+//       { user: userId },
+//       {
+//         $inc: { balance: amount, spark_tokens: amount },
+//         $set: { updated_at: new Date() },
+//       }
+//     );
+
+//     res.status(200).json({ clientSecret });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({
+//       message: "Failed to create wallet funding payment intent",
+//       error: err.message,
+//     });
+//   }
+// };
 exports.fundWallet = async (req, res) => {
   const userId = req.user.id;
   const { amount } = req.body;
@@ -47,19 +83,11 @@ exports.fundWallet = async (req, res) => {
 
     const clientSecret = await createWalletFundingIntent(
       customerEmail,
-      amount, // already in pounds
+      amount,
       "gbp"
     );
 
-    // Update wallet balance and spark_tokens
-    await Wallet.findOneAndUpdate(
-      { user: userId },
-      {
-        $inc: { balance: amount, spark_tokens: amount },
-        $set: { updated_at: new Date() },
-      }
-    );
-
+    // Do NOT update wallet balance here
     res.status(200).json({ clientSecret });
   } catch (err) {
     console.error(err);
@@ -69,6 +97,7 @@ exports.fundWallet = async (req, res) => {
     });
   }
 };
+
 exports.confirmFunding = async (req, res) => {
   const userId = req.user.id;
   const { amount } = req.body;
