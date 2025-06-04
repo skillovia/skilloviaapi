@@ -158,9 +158,17 @@ skillSchema.statics.searchBySparkToken = function (token) {
 };
 
 // Find one skill by id and userId
-skillSchema.statics.findSkillByIdAndUser = function (skillId, userId) {
+skillSchema.statics.findSkill = function (skillId, userId) {
   return this.findOne({ _id: skillId, userId });
 };
+
+// static async findSkill(id, userId) {
+//   const result = await pool.query(
+//     "SELECT * FROM skills WHERE id = $1 AND user_id = $2",
+//     [id, userId]
+//   );
+//   return result.rows[0];
+// }
 
 // Get all published skills with user details
 skillSchema.statics.getAllPublishedSkills = function () {

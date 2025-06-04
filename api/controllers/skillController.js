@@ -100,47 +100,107 @@ exports.createSkill = async (req, res) => {
   }
 };
 
+// exports.updateSkill = async (req, res) => {
+//   const userId = req.user.id;
+//   // const skillId = parseInt(req.params.id);
+//   const skillId = req.params.id; // ✅ Keep it as a string
+
+//   const updates = req.body;
+
+//   const checkskill = await Skill.findSkill(skillId, userId);
+//   if (checkskill == null) {
+//     return res.status(400).send({
+//       status: "error",
+//       message: "No skill found",
+//       data: null,
+//     });
+//   }
+
+//   // Ensure filePaths is populated with up to 4 uploaded files
+//   const filePaths = req.files.map((file) => file.path).slice(0, 4);
+//   const thumbnail01 = filePaths[0] ? filePaths[0].slice(15) : null;
+//   const thumbnail02 = filePaths[1] ? filePaths[1].slice(15) : null;
+//   const thumbnail03 = filePaths[2] ? filePaths[2].slice(15) : null;
+//   const thumbnail04 = filePaths[3] ? filePaths[3].slice(15) : null;
+
+//   // Assign file paths to respective columns
+//   updates.thumbnails = {
+//     thumbnail01: thumbnail01 || null,
+//     thumbnail02: thumbnail02 || null,
+//     thumbnail03: thumbnail03 || null,
+//     thumbnail04: thumbnail04 || null,
+//   };
+
+//   try {
+//     const skill = await Skill.update(userId, skillId, updates);
+//     res.status(200).json({
+//       status: "success",
+//       message: "Skill updated successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to update skill.",
+//       data: error,
+//     });
+//   }
+// };
 exports.updateSkill = async (req, res) => {
-  const userId = req.user.id;
-  const skillId = parseInt(req.params.id);
-  const updates = req.body;
-
-  const checkskill = await Skill.findSkill(skillId, userId);
-  if (checkskill == null) {
-    return res.status(400).send({
-      status: "error",
-      message: "No skill found",
-      data: null,
-    });
-  }
-
-  // Ensure filePaths is populated with up to 4 uploaded files
-  const filePaths = req.files.map((file) => file.path).slice(0, 4);
-  const thumbnail01 = filePaths[0] ? filePaths[0].slice(15) : null;
-  const thumbnail02 = filePaths[1] ? filePaths[1].slice(15) : null;
-  const thumbnail03 = filePaths[2] ? filePaths[2].slice(15) : null;
-  const thumbnail04 = filePaths[3] ? filePaths[3].slice(15) : null;
-
-  // Assign file paths to respective columns
-  updates.thumbnails = {
-    thumbnail01: thumbnail01 || null,
-    thumbnail02: thumbnail02 || null,
-    thumbnail03: thumbnail03 || null,
-    thumbnail04: thumbnail04 || null,
-  };
-
   try {
-    const skill = await Skill.update(userId, skillId, updates);
+    const userId = req.user.id;
+    const skillId = req.params.id;
+
+    console.log("User ID:", userId);
+    console.log("Skill ID:", skillId);
+    console.log("Request Body:", req.body);
+    console.log("Uploaded Files:", req.files);
+
+    const checkskill = await Skill.findSkill(skillId, userId);
+    if (checkskill == null) {
+      console.log("No skill found for the given ID and user.");
+      return res.status(400).send({
+        status: "error",
+        message: "No skill found",
+        data: null,
+      });
+    }
+
+    const filePaths = (req.files || []).map((file) => file.path).slice(0, 4);
+    const thumbnails = {
+      thumbnail01: filePaths[0] ? filePaths[0].slice(15) : null,
+      thumbnail02: filePaths[1] ? filePaths[1].slice(15) : null,
+      thumbnail03: filePaths[2] ? filePaths[2].slice(15) : null,
+      thumbnail04: filePaths[3] ? filePaths[3].slice(15) : null,
+    };
+
+    const updates = {
+      ...req.body,
+      thumbnails,
+    };
+
+    console.log("Final updates to be saved:", updates);
+
+    // const skill = await Skill.update(userId, skillId, updates);
+    const skill = await Skill.findOneAndUpdate(
+      { _id: skillId, user: userId },
+      updates,
+      { new: true }
+    );
+
+    console.log("Skill updated successfully:", skill);
+
     res.status(200).json({
       status: "success",
       message: "Skill updated successfully.",
       data: skill,
     });
   } catch (error) {
+    console.error("Error in updateSkill controller:", error); // ✅ Important
     res.status(500).json({
       status: "error",
       message: "Failed to update skill.",
-      data: error,
+      data: error.message || error,
     });
   }
 };
