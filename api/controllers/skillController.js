@@ -183,7 +183,7 @@ exports.updateSkill = async (req, res) => {
 
     // const skill = await Skill.update(userId, skillId, updates);
     const skill = await Skill.findOneAndUpdate(
-      { _id: skillId, user: userId },
+      { _id: skillId, userId },
       updates,
       { new: true }
     );
