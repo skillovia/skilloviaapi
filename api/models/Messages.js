@@ -51,23 +51,20 @@ messageSchema.statics.markAsRead = async function (messageId) {
   ).exec();
 };
 
-// Retrieve chat users with metadata for a specific user
 messageSchema.statics.retrieveChatUsers = async function (userId) {
-  // Aggregate to mimic your SQL query for chat users with unread count, last message, and last message time
+  const objectUserId = new mongoose.Types.ObjectId(userId); // ✅ Proper ObjectId instance
+
   return await this.aggregate([
     {
       $match: {
-        $or: [
-          { senderId: mongoose.Types.ObjectId(userId) },
-          { receiverId: mongoose.Types.ObjectId(userId) },
-        ],
+        $or: [{ senderId: objectUserId }, { receiverId: objectUserId }],
       },
     },
     {
       $project: {
         otherUserId: {
           $cond: [
-            { $eq: ["$senderId", mongoose.Types.ObjectId(userId)] },
+            { $eq: ["$senderId", objectUserId] },
             "$receiverId",
             "$senderId",
           ],
@@ -75,6 +72,8 @@ messageSchema.statics.retrieveChatUsers = async function (userId) {
         content: 1,
         createdAt: 1,
         markAsRead: 1,
+        senderId: 1,
+        receiverId: 1,
       },
     },
     {
@@ -90,7 +89,7 @@ messageSchema.statics.retrieveChatUsers = async function (userId) {
             $cond: [
               {
                 $and: [
-                  { $eq: ["$receiverId", mongoose.Types.ObjectId(userId)] },
+                  { $eq: ["$receiverId", objectUserId] },
                   { $eq: ["$markAsRead", false] },
                 ],
               },
