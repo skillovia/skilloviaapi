@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
       // required: true,
       // unique: true,
     },
+    bio: { type: String },
     gender: { type: String },
     location: { type: String },
     street: { type: String },
