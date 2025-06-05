@@ -13,16 +13,37 @@ const walletSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    spark_tokens: {
+      type: Number,
+      default: 20, // default value like in your SQL schema
+    },
+    currency: {
+      type: String,
+      default: "gbp",
+    },
   },
   { timestamps: true }
 );
+
+// walletSchema.statics.createWallet = async function (userId) {
+//   const existingWallet = await this.findOne({ user: userId });
+//   if (existingWallet) {
+//     throw new Error("Wallet already exists");
+//   }
+//   return await this.create({ user: userId });
+// };
 
 walletSchema.statics.createWallet = async function (userId) {
   const existingWallet = await this.findOne({ user: userId });
   if (existingWallet) {
     throw new Error("Wallet already exists");
   }
-  return await this.create({ user: userId });
+  return await this.create({
+    user: userId,
+    balance: 0,
+    spark_tokens: 20,
+    currency: "gbp",
+  });
 };
 
 walletSchema.statics.getWalletByUserId = async function (userId) {
