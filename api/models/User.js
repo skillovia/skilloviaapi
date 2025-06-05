@@ -139,12 +139,36 @@ userSchema.statics.getProfileByUserId = async function (id) {
         as: "account",
       },
     },
+    // {
+    //   $lookup: {
+    //     from: "follows",
+    //     let: { userId: "$_id" },
+    //     pipeline: [
+    //       { $match: { $expr: { $eq: ["$followingId", "$$userId"] } } },
+    //       { $count: "count" },
+    //     ],
+    //     as: "followers",
+    //   },
+    // },
+    // {
+    //   $lookup: {
+    //     from: "follows",
+    //     let: { userId: "$_id" },
+    //     pipeline: [
+    //       { $match: { $expr: { $eq: ["$followerId", "$$userId"] } } },
+    //       { $count: "count" },
+    //     ],
+    //     as: "following",
+    //   },
+    // },
+
     {
       $lookup: {
         from: "follows",
+        // let: { userId: { $toString: "$_id" } },
         let: { userId: "$_id" },
         pipeline: [
-          { $match: { $expr: { $eq: ["$followingId", "$$userId"] } } },
+          { $match: { $expr: { $eq: ["$following_id", "$$userId"] } } },
           { $count: "count" },
         ],
         as: "followers",
@@ -153,14 +177,16 @@ userSchema.statics.getProfileByUserId = async function (id) {
     {
       $lookup: {
         from: "follows",
+        // let: { userId: { $toString: "$_id" } },
         let: { userId: "$_id" },
         pipeline: [
-          { $match: { $expr: { $eq: ["$followerId", "$$userId"] } } },
+          { $match: { $expr: { $eq: ["$follower_id", "$$userId"] } } },
           { $count: "count" },
         ],
         as: "following",
       },
     },
+
     {
       $project: {
         phone: 1,
