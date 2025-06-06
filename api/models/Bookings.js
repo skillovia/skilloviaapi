@@ -65,12 +65,12 @@ bookingSchema.statics.createBooking = async function (userId, data, file) {
   // Create notifications for both users
   await Notification.insertMany([
     {
-      user_id: userId,
+      userId: userId,
       title: "Booking Created",
       description: `Your booking for "${title}" is pending.`,
     },
     {
-      user_id: booked_user_id,
+      userId: booked_user_id,
       title: "New Booking Received",
       description: `Someone has booked your skill: "${title}".`,
     },

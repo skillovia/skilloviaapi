@@ -106,14 +106,8 @@ router.put(
   upload.single("photo"),
   profilePhotoUpload
 );
-router.post(
-  "/stripe/connected/account/link",
-  verify,
-  generateStripeAccountLink
-);
 router.post("/compare-spark-tokens", verify, compareSparkTokens);
-router.post("/stripe/account/onboard", createOnboardingLink);
-router.post("/stripe/payment/intent", verify, processSplitPayment);
+
 //router.put('/profile/upload/aws', verify, uploads3.single('photo'), profilePhotoUploadS3);
 router.put("/profile/update/bio", verify, updateBio);
 router.put("/change/password", verify, changePassword);
@@ -125,7 +119,13 @@ router.get("/get/myreferred/:code", verify, getReferredUsers);
 router.get("/get/notifications", verify, getUserNotifications);
 router.post("/stripe/create/connected/account", verify, createStripeAccount);
 router.delete("/delete/connected/account/:id", verify, deleteStripeAccount);
-
+router.post(
+  "/stripe/connected/account/link",
+  verify,
+  generateStripeAccountLink
+);
+router.post("/stripe/account/onboard", createOnboardingLink);
+router.post("/stripe/payment/intent", verify, processSplitPayment);
 router.put("/stripe/update/account", verify, updateStripeAccount);
 router.get("/stripe/get/account/:userId", verify, getUserStripeAccount);
 

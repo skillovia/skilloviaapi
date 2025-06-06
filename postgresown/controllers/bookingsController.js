@@ -30,6 +30,7 @@ const Bookings = require("../models/Bookings");
 exports.createBookings = async (req, res) => {
   const userId = req.user.id;
   const data = req.body;
+  // data.status = data.status || "pending"; // This will default to 'pending' if no status is provided
 
   if (!data.title) {
     return res.status(400).json({
@@ -41,9 +42,10 @@ exports.createBookings = async (req, res) => {
 
   let fileUrl = null;
   if (req.file) {
-    fileUrl = req.file.location;
+    fileUrl = req.file.location; // AWS S3 returns the file URL in `req.file.location`
   }
 
+  // Extract file paths from uploaded thumbnails
   const filePaths = req.files?.thumbnails
     ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
     : [];
@@ -59,10 +61,12 @@ exports.createBookings = async (req, res) => {
     booking_date,
   } = data;
 
+
   const formatedData = {
     skills_id,
     booked_user_id,
     title,
+    spark_token, 
     description,
     booking_location,
     booking_date,
@@ -74,21 +78,8 @@ exports.createBookings = async (req, res) => {
     },
   };
 
-  // try {
-  //   const bookings = await Bookings.create(userId, formatedData);
-  //   res.status(200).json({
-  //     status: "success",
-  //     message: "Skill booked successfully.",
-  //     data: bookings,
-  //   });
-  // } catch (error) {
-
   try {
-    const bookings = await Bookings.createBooking(
-      userId,
-      formatedData,
-      fileUrl
-    );
+    const bookings = await Bookings.create(userId, formatedData);
     res.status(200).json({
       status: "success",
       message: "Skill booked successfully.",
@@ -99,7 +90,7 @@ exports.createBookings = async (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Failed to book skills.",
-      data: error.message, // just send error.message for clarity
+      data: error,
     });
   }
 };
