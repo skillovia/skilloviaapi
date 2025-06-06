@@ -105,7 +105,9 @@ exports.createBookings = async (req, res) => {
 };
 
 exports.updateBookings = async (req, res) => {
-  const bookingsId = parseInt(req.params.id);
+  // const bookingsId = parseInt(req.params.id);
+  const bookingsId = req.params.id; // ✅ Keep it as a string
+
   const data = req.body;
 
   let file = null;
@@ -128,7 +130,8 @@ exports.updateBookings = async (req, res) => {
 
 exports.rejectBookings = async (req, res) => {
   const status = "rejected";
-  const bookingsId = parseInt(req.params.id);
+  // const bookingsId = parseInt(req.params.id);
+  const bookingsId = req.params.id; // ✅ Keep it as a string
 
   try {
     const data = await Bookings.changeStatus(bookingsId, status);
@@ -148,7 +151,7 @@ exports.rejectBookings = async (req, res) => {
 
 exports.acceptBookings = async (req, res) => {
   const status = "accepted";
-  const bookingsId = parseInt(req.params.id);
+  const bookingsId = req.params.id; // ✅ Keep it as a string
 
   try {
     const data = await Bookings.changeStatus(bookingsId, status);
