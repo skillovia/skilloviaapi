@@ -274,27 +274,74 @@ exports.getInwardBookingsByUserId = async (req, res) => {
 };
 
 // get outward bookings
+// exports.getOutwardBookingsByUserId = async (req, res) => {
+//   const userId = req.user.id;
+
+//   try {
+//     const data = await Bookings.getOutwardBookingsByUserId(userId);
+//     if (data != null) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "User bookings retrieved successfully.",
+//         data: data,
+//       });
+//     } else {
+//       res
+//         .status(200)
+//         .json({ status: "success", message: "No bookings found", data: [] });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve bookings",
+//       data: error,
+//     });
+//   }
+// };
 exports.getOutwardBookingsByUserId = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const data = await Bookings.getOutwardBookingsByUserId(userId);
-    if (data != null) {
+    const bookings = await Bookings.getOutwardBookingsByUserId(userId);
+
+    if (bookings && bookings.length > 0) {
+      // Map bookings to include `id` as string instead of _id
+      const data = bookings.map((booking) => ({
+        id: booking._id.toString(),
+        skills_id: booking.skills_id,
+        booking_user_id: booking.booking_user_id,
+        booked_user_id: booking.booked_user_id,
+        title: booking.title,
+        description: booking.description,
+        booking_location: booking.booking_location,
+        booking_date: booking.booking_date,
+        thumbnail01: booking.thumbnail01,
+        thumbnail02: booking.thumbnail02,
+        thumbnail03: booking.thumbnail03,
+        thumbnail04: booking.thumbnail04,
+        file_url: booking.file_url,
+        status: booking.status,
+        createdAt: booking.createdAt,
+        updatedAt: booking.updatedAt,
+      }));
+
       res.status(200).json({
         status: "success",
         message: "User bookings retrieved successfully.",
-        data: data,
+        data,
       });
     } else {
-      res
-        .status(200)
-        .json({ status: "success", message: "No bookings found", data: [] });
+      res.status(200).json({
+        status: "success",
+        message: "No bookings found",
+        data: [],
+      });
     }
   } catch (error) {
     res.status(500).json({
       status: "error",
       message: "Failed to retrieve bookings",
-      data: error,
+      data: error.message || error,
     });
   }
 };
