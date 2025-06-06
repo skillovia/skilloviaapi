@@ -191,7 +191,8 @@ exports.acceptBookings = async (req, res) => {
 
 exports.startBooking = async (req, res) => {
   const status = "in-progress";
-  const bookingId = parseInt(req.params.id); // Only using the ID from the URL
+  // const bookingId = parseInt(req.params.id); // Only using the ID from the URL
+  const bookingId = req.params.id; // ✅ Keep it as a string
 
   try {
     const data = await Bookings.changeStatus(bookingId, status);
@@ -233,7 +234,8 @@ exports.startBooking = async (req, res) => {
 
 exports.completeBooking = async (req, res) => {
   const status = req.body.status || "completed"; // Default to "completed" if not passed
-  const bookingId = parseInt(req.params.id);
+  // const bookingId = parseInt(req.params.id);
+  const bookingId = req.params.id; // ✅ Keep it as a string
 
   try {
     const data = await Bookings.changeStatus(bookingId, status);
