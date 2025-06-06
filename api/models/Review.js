@@ -47,6 +47,14 @@ class ReviewModel {
   static async getReviewsForUser(userId) {
     return await Review.find({ revieweeId: userId }).exec();
   }
+  static async getReviewsForSkillAndUser(skillId, userId) {
+    return await Review.find({
+      skillId: skillId,
+      revieweeId: userId,
+    })
+      .populate("reviewerId", "name email")
+      .sort({ createdAt: -1 });
+  }
 }
 
 module.exports = ReviewModel;

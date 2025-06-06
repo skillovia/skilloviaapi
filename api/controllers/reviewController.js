@@ -68,3 +68,35 @@ exports.getReviewsForUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getSkillReviewsForUser = async (req, res) => {
+  const { skillId, userId } = req.params;
+
+  try {
+    const reviews = await Review.getReviewsForSkillAndUser(skillId, userId);
+
+    res.status(200).json({
+      status: "success",
+      data: reviews,
+    });
+  } catch (error) {
+    console.error("Error fetching reviews for skill and user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+// Get all reviews for a specific skill
+// exports.getSkillReviewsForUser = async (req, res) => {
+//   try {
+//     const reviews = await Review.find({ skillId: req.params.skillId })
+//       .populate("reviewerId", "name email") // Optional: populate reviewer details
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).json({
+//       status: "success",
+//       data: reviews,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching reviews for skill:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
