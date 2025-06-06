@@ -15,6 +15,6 @@ router.post("/", verify, createReview);
 router.get("/user/:id", verify, getReviewsForUser);
 // router.get("/skill/:skillId", verify, getSkillReviewsForUser);
 // GET all reviews for a specific skill of a specific user
-router.get("/skill/:skillId/user/:userId", verify, getSkillReviewsForUser);
+router.get("/skill/:skillId/user", verify, getSkillReviewsForUser);
 
 module.exports = router;

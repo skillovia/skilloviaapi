@@ -69,11 +69,33 @@ exports.getReviewsForUser = async (req, res) => {
   }
 };
 
+// exports.getSkillReviewsForUser = async (req, res) => {
+//   const { skillId, userId } = req.params;
+
+//   try {
+//     const reviews = await Review.getReviewsForSkillAndUser(skillId, userId);
+
+//     res.status(200).json({
+//       status: "success",
+//       data: reviews,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching reviews for skill and user:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
+// controllers/reviewController.js
 exports.getSkillReviewsForUser = async (req, res) => {
-  const { skillId, userId } = req.params;
+  const { skillId } = req.params;
+  const userId = req.user.id; // from verify middleware
 
   try {
     const reviews = await Review.getReviewsForSkillAndUser(skillId, userId);
+
+    console.log("Skill:", skillId);
+    console.log("User:", userId);
+    console.log("Fetched reviews:", reviews);
 
     res.status(200).json({
       status: "success",
@@ -84,6 +106,7 @@ exports.getSkillReviewsForUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 // Get all reviews for a specific skill
 // exports.getSkillReviewsForUser = async (req, res) => {
 //   try {
