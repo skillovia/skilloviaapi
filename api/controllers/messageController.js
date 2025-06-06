@@ -9,85 +9,106 @@ exports.sendMessage = async (req, res) => {
       req.body.content != null
     ) {
       const message = await Messages.store(req.body);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "messages sent successfully.",
-          data: message,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "messages sent successfully.",
+        data: message,
+      });
     } else {
       res
         .status(200)
         .json({ status: "failed", message: "Missing parameter", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve messages",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve messages",
+      data: error,
+    });
   }
 };
 
+// exports.retrieveMessage = async (req, res) => {
+//   const senderId = parseInt(req.params.senderId);
+//   const receiverId = parseInt(req.params.receiverId);
+
+//   try {
+//     if (senderId != null && receiverId != null) {
+//       const message = await Messages.retrieveMessage(senderId, receiverId);
+//       res
+//         .status(200)
+//         .json({
+//           status: "success",
+//           message: "messages retrieved successfully.",
+//           data: message,
+//         });
+//     } else {
+//       res
+//         .status(200)
+//         .json({ status: "failed", message: "Missing parameter", data: null });
+//     }
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({
+//         status: "error",
+//         message: "Failed to retrieve messages",
+//         data: error,
+//       });
+//   }
+// };
+
 exports.retrieveMessage = async (req, res) => {
-  const senderId = parseInt(req.params.senderId);
-  const receiverId = parseInt(req.params.receiverId);
+  const senderId = req.params.senderId;
+  const receiverId = req.params.receiverId;
 
   try {
-    if (senderId != null && receiverId != null) {
+    if (senderId && receiverId) {
       const message = await Messages.retrieveMessage(senderId, receiverId);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "messages retrieved successfully.",
-          data: message,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "Messages retrieved successfully.",
+        data: message,
+      });
     } else {
-      res
-        .status(200)
-        .json({ status: "failed", message: "Missing parameter", data: null });
+      res.status(400).json({
+        status: "failed",
+        message: "Missing sender or receiver ID",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve messages",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve messages",
+      data: error.message,
+    });
   }
 };
 
 exports.markAsRead = async (req, res) => {
-  const messageId = parseInt(req.params.messageId);
+  // const messageId = parseInt(req.params.messageId);
+  const messageId = req.params.messageId;
 
   try {
     if (messageId != null) {
       const message = await Messages.markAsRead(messageId);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "messages updated successfully.",
-          data: message,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "messages updated successfully.",
+        data: message,
+      });
     } else {
       res
         .status(200)
         .json({ status: "failed", message: "Missing parameter", data: null });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to update messages",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update messages",
+      data: error,
+    });
   }
 };
 
@@ -115,31 +136,25 @@ exports.retrieveChatUsers = async (req, res) => {
   try {
     if (userId != null) {
       const chatUsers = await Messages.retrieveChatUsers(userId);
-      return res
-        .status(200)
-        .json({
-          status: "success",
-          message: "Chat users with details retrieved successfully.",
-          data: chatUsers,
-        });
+      return res.status(200).json({
+        status: "success",
+        message: "Chat users with details retrieved successfully.",
+        data: chatUsers,
+      });
     } else {
       console.warn("Missing or invalid userId:", userId);
-      return res
-        .status(400)
-        .json({
-          status: "failed",
-          message: "Missing or invalid parameter.",
-          data: null,
-        });
+      return res.status(400).json({
+        status: "failed",
+        message: "Missing or invalid parameter.",
+        data: null,
+      });
     }
   } catch (error) {
     console.error("Error in retrieveChatUsers:", error);
-    return res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve chat users with details.",
-        data: error.message,
-      });
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve chat users with details.",
+      data: error.message,
+    });
   }
 };
