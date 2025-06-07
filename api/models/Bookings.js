@@ -25,7 +25,7 @@ const bookingSchema = new mongoose.Schema(
     thumbnail02: { type: String },
     thumbnail03: { type: String },
     thumbnail04: { type: String },
-    file_url: { type: String },
+    // file_url: { type: String },
     status: { type: String, default: "pending" }, // example default status
   },
   { timestamps: true }
@@ -57,7 +57,7 @@ bookingSchema.statics.createBooking = async function (userId, data, file) {
     thumbnail02: thumbnails.thumbnail02,
     thumbnail03: thumbnails.thumbnail03,
     thumbnail04: thumbnails.thumbnail04,
-    file_url: file,
+    // file_url: file,
   });
 
   const savedBooking = await booking.save();
