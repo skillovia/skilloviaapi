@@ -69,20 +69,27 @@ const upload = multer({
 });
 
 // router.post('/', verify, upload.single('file'), createBookings);
+// router.post(
+//   "/",
+//   verify,
+//   upload.fields([{ name: "thumbnails", maxCount: 4 }]),
+//   async (req, res) => {
+//     try {
+//       await createBookings(req, res);
+//     } catch (err) {
+//       console.error("Error creating booking:", err);
+//       res
+//         .status(500)
+//         .json({ status: "error", message: "Internal Server Error" });
+//     }
+//   }
+// );
+
 router.post(
   "/",
   verify,
   upload.fields([{ name: "thumbnails", maxCount: 4 }]),
-  async (req, res) => {
-    try {
-      await createBookings(req, res);
-    } catch (err) {
-      console.error("Error creating booking:", err);
-      res
-        .status(500)
-        .json({ status: "error", message: "Internal Server Error" });
-    }
-  }
+  createBookings
 );
 router.put("/:id", verify, upload.single("file"), updateBookings);
 router.put("/reject/:id", verify, rejectBookings);
