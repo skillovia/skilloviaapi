@@ -186,7 +186,26 @@ userSchema.statics.getProfileByUserId = async function (id) {
         as: "following",
       },
     },
-
+    {
+      $lookup: {
+        from: "kycs",
+        let: { userId: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$userId", "$$userId"] } } },
+          { $sort: { createdAt: -1 } }, // Get latest KYC
+          { $limit: 1 },
+        ],
+        as: "kyc",
+      },
+    },
+    {
+      $lookup: {
+        from: "paymentmethods",
+        localField: "_id",
+        foreignField: "userId",
+        as: "payment_method",
+      },
+    },
     {
       $project: {
         phone: 1,
@@ -205,6 +224,7 @@ userSchema.statics.getProfileByUserId = async function (id) {
         updated_at: 1,
         referral_code: 1,
         website: 1,
+        linked_account: 1, // assuming this is stored in the User model
 
         skills: {
           $map: {
@@ -237,6 +257,16 @@ userSchema.statics.getProfileByUserId = async function (id) {
         },
         total_following: {
           $ifNull: [{ $arrayElemAt: ["$following.count", 0] }, 0],
+        },
+        kyc_status: {
+          $cond: [
+            { $gt: [{ $size: "$kyc" }, 0] },
+            { $arrayElemAt: ["$kyc.status", 0] },
+            "none",
+          ],
+        },
+        payment_method: {
+          $cond: [{ $gt: [{ $size: "$payment_method" }, 0] }, true, false],
         },
       },
     },
