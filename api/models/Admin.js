@@ -1,5 +1,5 @@
 const Skill = require("../models/Skill");
-const User = require("../models/User");
+const AdminUser = require("../models/AdminUser");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt"); // or 'bcryptjs' if you use that package
 
@@ -66,13 +66,13 @@ class Admin {
 
   static async createAnyUser(data, options = {}) {
     const { phone, email, firstname, lastname, gender, password } = data;
-    const { role_id } = options;
+    // const { role_id } = options;
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const code = Math.floor(1000 + Math.random() * 900000);
     const referralCode = firstname + code;
 
-    const newUser = new User({
+    const newUser = new AdminUser({
       phone,
       email,
       firstname,
@@ -81,7 +81,7 @@ class Admin {
       password: hashedPassword,
       is_email_verified: true,
       referral_code: referralCode,
-      role_id: role_id || 2, // Default to normal user role_id = 2 if not provided
+      // role_id: role_id || 2, // Default to normal user role_id = 2 if not provided
     });
 
     return await newUser.save();
@@ -116,7 +116,7 @@ class Admin {
     return await skillCategory.save();
   }
   static async checkUserExist(phone, email) {
-    return await User.findOne({
+    return await AdminUser.findOne({
       $or: [{ phone }, { email }],
     });
   }
@@ -135,7 +135,7 @@ class Admin {
       ...(hashedPassword && { password: hashedPassword }),
     };
 
-    return await User.findByIdAndUpdate(userId, updateData, { new: true });
+    return await AdminUser.findByIdAndUpdate(userId, updateData, { new: true });
   }
 }
 

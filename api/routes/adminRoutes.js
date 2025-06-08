@@ -14,6 +14,7 @@ const {
   approveKycStatus,
   rejectKycStatus,
   retrieveUserKyc,
+  login,
   registerAnyUser,
   retrievePendingKyc,
   retrieveApprovedKyc,
@@ -73,6 +74,7 @@ router.get("/skills/get/categories", verify, isAdmin, getSkillCategory);
 
 router.post("/users/create/account", verify, isAdmin, registerUser);
 router.post("/users/create/any-account", registerAnyUser);
+router.post("/admin-login", login);
 router.put("/users/update/account/:id", verify, isAdmin, updateUser);
 router.get("/all/users", verify, isAdmin, getAllusers);
 router.get("/users/get/all", verify, isAdmin, getAllusers);

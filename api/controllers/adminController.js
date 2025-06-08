@@ -1,6 +1,7 @@
 const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt"); // or 'bcryptjs' if you use that package
-
+const AdminUser = require("../models/AdminUser");
+const jwt = require("jsonwebtoken");
 /* ---------------   SKILLS  ------------------- */
 /* ---------------  CONTROLLERS  ----------------- */
 
@@ -170,7 +171,9 @@ exports.registerUser = async (req, res) => {
     });
   }
 };
-
+function generateAccessToken(user) {
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "12h" });
+}
 exports.registerAnyUser = async (req, res) => {
   try {
     const check = await Admin.checkUserExist(req.body.phone, req.body.email);
@@ -198,7 +201,113 @@ exports.registerAnyUser = async (req, res) => {
     });
   }
 };
+exports.login = async (req, res) => {
+  const { email, phone, password } = req.body;
 
+  try {
+    let user = email
+      ? await AdminUser.findByEmail(email)
+      : await AdminUser.findByPhone(phone);
+
+    if (!user) {
+      return res.status(400).send({
+        status: "error",
+        message: "Email/Phone or password is not correct",
+        data: null,
+      });
+    }
+
+    const validPass = await bcrypt.compare(password, user.password);
+    if (!validPass) {
+      return res.status(400).send({
+        status: "error",
+        message: "Invalid password",
+        data: null,
+      });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+      id: user._id,
+      email: user.email,
+      phone: user.phone,
+      // role_id: user.role_id,
+    });
+
+    const refreshToken = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        phone: user.phone,
+        // role_id: user.role_id,
+      },
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    // Save refresh token to user doc
+    await AdminUser.storeRefreshToken(user._id, refreshToken);
+
+    // Set refresh token cookie
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).send({
+      status: "success",
+      message: "Login was successful",
+      data: { accessToken, refreshToken },
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to login user.",
+      data: error.message,
+    });
+  }
+};
+
+exports.refreshTokenWeb = async (req, res) => {
+  const cookies = req.cookies;
+  if (!cookies.jwt) return res.sendStatus(401);
+  const refreshToken = cookies.jwt;
+  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+
+  const token = await User.getRefreshToken(refreshToken);
+  if (token && token.length < 0) return res.sendStatus(403);
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, user) => {
+    if (error) return res.json(error);
+    const accessToken = generateLongLiveAccessToken({
+      id: user.id,
+      email: user.email,
+      phone: user.phone,
+      lat: user.lat,
+      lon: user.lon,
+      role_id: user.role_id,
+    });
+
+    // Store refresh token
+    const storereFreshToken = User.storeRefreshToken(accessToken);
+
+    // Creates Secure Cookie with refresh token
+    res.cookie("jwt", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).send({
+      status: "success",
+      message: "Refresh token retrieved successfully",
+      data: { id: user.id, accessToken: accessToken },
+    });
+  });
+};
 exports.updateUser = async (req, res) => {
   const userId = parseInt(req.params.id);
   const updates = req.body;
