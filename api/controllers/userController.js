@@ -203,6 +203,9 @@ exports.getProfileByUserId = async (req, res) => {
       referral_code,
       website,
       skills,
+      kyc_status, // new
+      payment_method, // new
+      linked_account,
     } = data;
 
     // Map skills array if exists
@@ -240,6 +243,9 @@ exports.getProfileByUserId = async (req, res) => {
       website,
       created_at,
       updated_at,
+      kyc_status,
+      payment_method,
+      linked_account,
       skills: mappedSkills,
     };
 
