@@ -258,10 +258,30 @@ userSchema.statics.getProfileByUserId = async function (id) {
         total_following: {
           $ifNull: [{ $arrayElemAt: ["$following.count", 0] }, 0],
         },
+        // kyc_status: {
+        //   $cond: [
+        //     { $gt: [{ $size: "$kyc" }, 0] },
+        //     { $arrayElemAt: ["$kyc.status", 0] },
+        //     "none",
+        //   ],
+        // },
+
         kyc_status: {
           $cond: [
             { $gt: [{ $size: "$kyc" }, 0] },
-            { $arrayElemAt: ["$kyc.status", 0] },
+            {
+              $arrayElemAt: [
+                {
+                  $map: {
+                    input: "$kyc",
+                    as: "k",
+                    // in: "$$k.status",
+                    in: "$$k.approval_status",
+                  },
+                },
+                0,
+              ],
+            },
             "none",
           ],
         },
