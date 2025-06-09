@@ -478,7 +478,8 @@ exports.changeUserRole = async (req, res) => {
 /* ---------------  CONTROLLERS  ----------------- */
 
 exports.approveKycStatus = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id; // Use the string as-is
+
   const status = "approved";
 
   try {
@@ -498,7 +499,8 @@ exports.approveKycStatus = async (req, res) => {
 };
 
 exports.rejectKycStatus = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = req.params.id; // Use the string as-is
+
   const status = "rejected";
 
   try {

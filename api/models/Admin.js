@@ -3,6 +3,7 @@ const AdminUser = require("../models/AdminUser");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt"); // or 'bcryptjs' if you use that package
+const KYC = require("../models/Kyc"); // adjust the path as needed
 
 class Admin {
   /** ----------- SKILLS ------------ */
@@ -21,6 +22,17 @@ class Admin {
       { approval_status: status },
       { new: true }
     );
+  }
+
+  // id is expected to be a MongoDB ObjectId string
+  static async changeStatus(id, status) {
+    const updated = await KYC.findByIdAndUpdate(
+      id,
+      { approval_status: status },
+      { new: true } // returns the updated document
+    );
+
+    return updated;
   }
 
   static async deleteSkill(skillId) {
