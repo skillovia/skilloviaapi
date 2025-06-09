@@ -1,5 +1,6 @@
 const Skill = require("../models/Skill");
 const AdminUser = require("../models/AdminUser");
+const User = require("../models/User");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt"); // or 'bcryptjs' if you use that package
 
@@ -136,6 +137,13 @@ class Admin {
     };
 
     return await AdminUser.findByIdAndUpdate(userId, updateData, { new: true });
+  }
+
+  static async getAllAdminusers() {
+    return await AdminUser.find().select("-password -refreshToken"); // exclude sensitive fields
+  }
+  static async getAllusers() {
+    return await User.find().select("-password -refreshToken"); // exclude sensitive fields
   }
 }
 

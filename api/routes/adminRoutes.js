@@ -6,12 +6,13 @@ const {
   retrievePublishedSkill,
   retrieveUnpublishedSkill,
   retrieveUserSkills,
-  registerUser,
+  // registerUser,
   updateUser,
   getAllusers,
   getProfileByUserId,
   changeUserRole,
   approveKycStatus,
+  getAllAdminusers,
   rejectKycStatus,
   retrieveUserKyc,
   login,
@@ -25,67 +26,74 @@ const {
 const router = express.Router();
 const verify = require("../middlewares/verifyToken");
 const isAdmin = require("../middlewares/isAdmin");
-const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { S3Client } = require("@aws-sdk/client-s3");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, callback) {
-    const uploadDir = "/uploads/profile";
-
-    callback(null, __dirname + uploadDir);
-  },
-  filename: function (req, file, callback) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const filename = uniqueSuffix + path.extname(file.originalname);
-    const filePath = path.join(__dirname + "/uploads/profile", filename); // Construct the file path
-
-    // Store the file path in req
-    if (!req.filePaths) {
-      req.filePaths = null;
-    }
-    req.filePaths = filePath;
-
-    callback(null, filename);
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      const filename =
+        "skill-thumbnails/" +
+        Date.now().toString() +
+        "-" +
+        file.originalname.replace(/\s+/g, "-");
+      cb(null, filename);
+    },
+  }),
+});
 
-router.put("/skills/publish/:id", verify, isAdmin, publishSkill);
-router.put("/skills/unpublish/:id", verify, isAdmin, unPublishSkill);
-router.delete("/skills/delete/:id", verify, isAdmin, deleteSkill);
-router.get("/skills/get/published", verify, isAdmin, retrievePublishedSkill);
-router.get(
-  "/skills/get/unpublished",
-  verify,
-  isAdmin,
-  retrieveUnpublishedSkill
-);
-router.get("/skills/user/:id", verify, isAdmin, retrieveUserSkills);
 router.post(
   "/skills/add/category",
   verify,
-  isAdmin,
+
   upload.single("thumbnail"),
   addSkillCategory
 );
-router.get("/skills/get/categories", verify, isAdmin, getSkillCategory);
 
-router.post("/users/create/account", verify, isAdmin, registerUser);
+// router.post("/users/create/account", verify, registerUser);
 router.post("/users/create/any-account", registerAnyUser);
 router.post("/admin-login", login);
-router.put("/users/update/account/:id", verify, isAdmin, updateUser);
-router.get("/all/users", verify, isAdmin, getAllusers);
-router.get("/users/get/all", verify, isAdmin, getAllusers);
-router.get("/users/get/profile/:id", verify, isAdmin, getProfileByUserId);
-router.put("/users/change/role/:user_id", verify, isAdmin, changeUserRole);
+router.get("/skills/user/:id", verify, retrieveUserSkills);
+router.get("/skills/get/published", verify, retrievePublishedSkill);
+router.get(
+  "/skills/get/unpublished",
+  verify,
 
-router.put("/kyc/approve/:id", verify, isAdmin, approveKycStatus);
-router.put("/kyc/reject/:id", verify, isAdmin, rejectKycStatus);
-router.get("/kyc/user/:user_id", verify, isAdmin, retrieveUserKyc);
-router.get("/kyc/pending", verify, isAdmin, retrievePendingKyc);
-router.get("/kyc/approved", verify, isAdmin, retrieveApprovedKyc);
-router.delete("/kyc/delete/:id", verify, isAdmin, removeKyc);
+  retrieveUnpublishedSkill
+);
 
+router.get("/skills/get/categories", verify, getSkillCategory);
+
+router.get("/kyc/user/:user_id", verify, retrieveUserKyc);
+router.get("/kyc/pending", verify, retrievePendingKyc);
+router.get("/kyc/approved", verify, retrieveApprovedKyc);
+router.get("/users/get/all", verify, getAllusers);
+router.get("/users-admin/get/all", verify, getAllAdminusers);
+router.get("/users/get/profile/:id", verify, getProfileByUserId);
+router.put("/users/change/role/:user_id", verify, changeUserRole);
+router.put("/skills/publish/:id", verify, publishSkill);
+router.put("/skills/unpublish/:id", verify, unPublishSkill);
+router.put("/users/update/account/:id", verify, updateUser);
+router.put("/kyc/approve/:id", verify, approveKycStatus);
+router.put("/kyc/reject/:id", verify, rejectKycStatus);
+
+router.delete("/kyc/delete/:id", verify, removeKyc);
+router.delete("/skills/delete/:id", verify, deleteSkill);
 module.exports = router;

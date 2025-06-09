@@ -2,48 +2,49 @@ const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt"); // or 'bcryptjs' if you use that package
 const AdminUser = require("../models/AdminUser");
 const jwt = require("jsonwebtoken");
+const SkillCategory = require("../models/SkillCategory");
 /* ---------------   SKILLS  ------------------- */
 /* ---------------  CONTROLLERS  ----------------- */
 
-exports.publishSkill = async (req, res) => {
-  const skillId = parseInt(req.params.id);
-  const status = "published";
+// exports.publishSkill = async (req, res) => {
+//   const skillId = parseInt(req.params.id);
+//   const status = "published";
 
-  try {
-    const skill = await Admin.publishSkill(skillId, status);
-    res.status(200).json({
-      status: "success",
-      message: "Skill published successfully.",
-      data: skill,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: "Failed to update skill.",
-      data: error,
-    });
-  }
-};
+//   try {
+//     const skill = await Admin.publishSkill(skillId, status);
+//     res.status(200).json({
+//       status: "success",
+//       message: "Skill published successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to update skill.",
+//       data: error,
+//     });
+//   }
+// };
 
-exports.unPublishSkill = async (req, res) => {
-  const skillId = parseInt(req.params.id);
-  const status = "draft";
+// exports.unPublishSkill = async (req, res) => {
+//   const skillId = parseInt(req.params.id);
+//   const status = "draft";
 
-  try {
-    const skill = await Admin.unPublishSkill(skillId, status);
-    res.status(200).json({
-      status: "success",
-      message: "Skill unpublished successfully.",
-      data: skill,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: "Failed to update skill.",
-      data: error,
-    });
-  }
-};
+//   try {
+//     const skill = await Admin.unPublishSkill(skillId, status);
+//     res.status(200).json({
+//       status: "success",
+//       message: "Skill unpublished successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to update skill.",
+//       data: error,
+//     });
+//   }
+// };
 
 exports.deleteSkill = async (req, res) => {
   const skillId = parseInt(req.params.id);
@@ -64,60 +65,149 @@ exports.deleteSkill = async (req, res) => {
   }
 };
 
+// exports.retrievePublishedSkill = async (req, res) => {
+//   const status = "published";
+
+//   try {
+//     const skill = await Admin.retrieveSkillByStatus(status);
+//     if (skill != null) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "published skills retrieved successfully.",
+//         data: skill,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: "success",
+//         message: "No published skill record found",
+//         data: null,
+//       });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve skills",
+//       data: error,
+//     });
+//   }
+// };
+
+// exports.retrieveUnpublishedSkill = async (req, res) => {
+//   const status = "draft";
+
+//   try {
+//     const skill = await Admin.retrieveSkillByStatus(status);
+//     if (skill != null) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "draft skills retrieved successfully.",
+//         data: skill,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: "success",
+//         message: "No skill record found",
+//         data: null,
+//       });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve skills",
+//       data: error,
+//     });
+//   }
+// };
+
+// Get all published skill categories
 exports.retrievePublishedSkill = async (req, res) => {
-  const status = "published";
-
   try {
-    const skill = await Admin.retrieveSkillByStatus(status);
-    if (skill != null) {
-      res.status(200).json({
-        status: "success",
-        message: "published skills retrieved successfully.",
-        data: skill,
-      });
-    } else {
-      res.status(200).json({
-        status: "success",
-        message: "No published skill record found",
-        data: null,
-      });
-    }
+    const skills = await SkillCategory.retrieveByStatus("published");
+    res.status(200).json({
+      status: "success",
+      message: skills.length
+        ? "Published skill categories retrieved successfully."
+        : "No published skill categories found.",
+      data: skills,
+    });
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Failed to retrieve skills",
-      data: error,
+      message: "Failed to retrieve skill categories",
+      data: error.message || error,
     });
   }
 };
 
+// Get all draft/unpublished skill categories
 exports.retrieveUnpublishedSkill = async (req, res) => {
-  const status = "draft";
-
   try {
-    const skill = await Admin.retrieveSkillByStatus(status);
-    if (skill != null) {
-      res.status(200).json({
-        status: "success",
-        message: "draft skills retrieved successfully.",
-        data: skill,
-      });
-    } else {
-      res.status(200).json({
-        status: "success",
-        message: "No skill record found",
-        data: null,
-      });
-    }
+    const skills = await SkillCategory.retrieveByStatus("draft");
+    res.status(200).json({
+      status: "success",
+      message: skills.length
+        ? "Draft skill categories retrieved successfully."
+        : "No draft skill categories found.",
+      data: skills,
+    });
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Failed to retrieve skills",
-      data: error,
+      message: "Failed to retrieve skill categories",
+      data: error.message || error,
     });
   }
 };
 
+// Publish a skill category by id
+exports.publishSkill = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedSkill = await SkillCategory.publish(id);
+    if (!updatedSkill) {
+      return res.status(404).json({
+        status: "error",
+        message: "Skill category not found",
+      });
+    }
+    res.status(200).json({
+      status: "success",
+      message: "Skill category published successfully",
+      data: updatedSkill,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to publish skill category",
+      data: error.message || error,
+    });
+  }
+};
+
+// Unpublish (draft) a skill category by id
+exports.unPublishSkill = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedSkill = await SkillCategory.unpublish(id);
+    if (!updatedSkill) {
+      return res.status(404).json({
+        status: "error",
+        message: "Skill category not found",
+      });
+    }
+    res.status(200).json({
+      status: "success",
+      message: "Skill category unpublished successfully",
+      data: updatedSkill,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to unpublish skill category",
+      data: error.message || error,
+    });
+  }
+};
 exports.retrieveUserSkills = async (req, res) => {
   const userId = parseInt(req.params.id);
 
@@ -326,6 +416,26 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+exports.getAllAdminusers = async (req, res) => {
+  try {
+    const users = await Admin.getAllAdminusers();
+    if (users && users.length > 0) {
+      res.status(200).json({
+        status: "success",
+        message: "users retrieved successful",
+        data: users,
+      });
+    } else {
+      res
+        .status(200)
+        .json({ status: "success", message: "No user found", data: null });
+    }
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: error.message });
+  }
+};
 exports.getAllusers = async (req, res) => {
   try {
     const users = await Admin.getAllusers();
@@ -346,7 +456,6 @@ exports.getAllusers = async (req, res) => {
       .json({ message: "Error fetching users", error: error.message });
   }
 };
-
 exports.changeUserRole = async (req, res) => {
   const userId = parseInt(req.params.user_id);
   const { roleId } = req.body;
@@ -604,15 +713,45 @@ exports.getProfileByUserId = async (req, res) => {
 };
 
 // add skill category
+// exports.addSkillCategory = async (req, res) => {
+//   const data = req.body;
+
+//   if (req.filePaths != null) {
+//     const filePath = req.filePaths;
+//     const thumbnail = filePath.slice(15);
+
+//     try {
+//       const skill = await Admin.addSkillCategory(data, thumbnail);
+//       res.status(200).json({
+//         status: "success",
+//         message: "Skill category created successfully.",
+//         data: skill,
+//       });
+//     } catch (error) {
+//       res.status(500).json({
+//         status: "error",
+//         message: "Failed to create skill.",
+//         data: error,
+//       });
+//     }
+//   } else {
+//     res.status(400).send({
+//       status: "error",
+//       message: "No image found",
+//       data: null,
+//     });
+//   }
+// };
+
 exports.addSkillCategory = async (req, res) => {
   const data = req.body;
 
-  if (req.filePaths != null) {
-    const filePath = req.filePaths;
-    const thumbnail = filePath.slice(15);
+  if (req.file && req.file.location) {
+    const thumbnail = req.file.location;
 
     try {
-      const skill = await Admin.addSkillCategory(data, thumbnail);
+      const skill = await SkillCategory.addSkillCategory(data, thumbnail);
+
       res.status(200).json({
         status: "success",
         message: "Skill category created successfully.",
@@ -622,40 +761,65 @@ exports.addSkillCategory = async (req, res) => {
       res.status(500).json({
         status: "error",
         message: "Failed to create skill.",
-        data: error,
+        data: error.message || error,
       });
     }
   } else {
-    res.status(400).send({
+    res.status(400).json({
       status: "error",
-      message: "No image found",
+      message: "No image uploaded",
       data: null,
     });
   }
 };
 
 // get skill category
-exports.getSkillCategory = async (req, res) => {
-  const status = "published";
+// exports.getSkillCategory = async (req, res) => {
+//   const status = "published";
 
+//   try {
+//     const data = await Admin.getSkillCategory(status);
+//     if (data != null) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "skills retrieved successfully.",
+//         data: data,
+//       });
+//     } else {
+//       res
+//         .status(200)
+//         .json({ status: "success", message: "No skill found", data: null });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve skills",
+//       data: error,
+//     });
+//   }
+// };
+
+exports.getSkillCategory = async (req, res) => {
   try {
-    const data = await Admin.getSkillCategory(status);
-    if (data != null) {
+    const categories = await SkillCategory.retrieveAll();
+    if (categories.length > 0) {
       res.status(200).json({
         status: "success",
-        message: "skills retrieved successfully.",
-        data: data,
+        message: "Skill categories retrieved successfully.",
+        data: categories,
       });
     } else {
-      res
-        .status(200)
-        .json({ status: "success", message: "No skill found", data: null });
+      res.status(200).json({
+        status: "success",
+        message: "No skill categories found.",
+        data: [],
+      });
     }
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Failed to retrieve skills",
-      data: error,
+      message: "Failed to retrieve skill categories.",
+      data: error.message || error,
     });
   }
 };
