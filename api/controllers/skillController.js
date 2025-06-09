@@ -431,6 +431,73 @@ exports.searchSkillsByName = async (req, res) => {
   }
 };
 
+exports.getUsersBySkillCategory = async (req, res) => {
+  const { categoryId } = req.params;
+
+  try {
+    const skills = await Skill.find({
+      skillCategoryId: categoryId,
+      approval_status: "published",
+    }).populate({
+      path: "userId",
+      select: "firstname lastname email photourl", // include basic user info
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Users and skills retrieved successfully.",
+      data: skills,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve users by skill category",
+      data: error.message,
+    });
+  }
+};
+
+// controllers/skillsController.js
+
+// exports.searchSkillsByName = async (req, res) => {
+//   const searchTerm = req.params.term;
+
+//   try {
+//     // Find skill category by name first (if you're searching by name)
+//     const category = await SkillCategory.findOne({
+//       name: { $regex: new RegExp(searchTerm, "i") },
+//     });
+
+//     if (!category) {
+//       return res.status(200).json({
+//         status: "success",
+//         message: "No skills found for this category name",
+//         data: [],
+//       });
+//     }
+
+//     const skills = await Skill.find({
+//       skillCategoryId: category._id,
+//       approval_status: "published",
+//     }).populate({
+//       path: "userId",
+//       select: "firstname lastname email photourl", // customize what you want to return
+//     });
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "Search result retrieved successfully.",
+//       data: skills,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve skills",
+//       data: error.message,
+//     });
+//   }
+// };
+
 exports.searchUsersBySkillType = async (req, res) => {
   const searchTerm = req.params.term;
 

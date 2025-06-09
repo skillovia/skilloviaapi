@@ -136,6 +136,24 @@ skillSchema.statics.deleteSkill = function (userId, skillId) {
   return this.findOneAndDelete({ _id: skillId, userId });
 };
 
+// static async searchSkillsByName(skillName) {
+//   const result = await pool.query(
+//     `
+//           SELECT
+//               skills.*,
+//               users.id AS creator_id,
+//               (users.firstname || ' ' || users.lastname) AS creator_name,
+//               users.email AS creator_email,
+//               users.photourl
+//           FROM skills
+//           INNER JOIN users ON skills.user_id = users.id
+//           WHERE skills.skill_type ILIKE $1
+//           AND skills.approval_status = 'published'
+//           `,
+//     [`%${skillName}%`]
+//   );
+//   return result.rows;
+// }
 // Delete a specific thumbnail field by setting it to null
 skillSchema.statics.deleteThumbnail = function (
   userId,

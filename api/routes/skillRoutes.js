@@ -6,6 +6,7 @@ const {
   retrievePublishedSkill,
   searchSkillsByName,
   searchSkillsByCreatorName,
+  getUsersBySkillCategory,
   searchSkillsBySparktoken,
   updatePublishedStatus,
   retrieveUserSkill,
@@ -104,6 +105,8 @@ router.delete("/:id", verify, deleteSkill);
 router.put("/publish/:id", verify, updatePublishedStatus);
 router.get("/", verify, retrievePublishedSkill);
 router.get("/searchname/:term", verify, searchSkillsByName);
+// routes/skills.js or wherever your skill routes are
+router.get("/category/:categoryId/users", verify, getUsersBySkillCategory);
 router.get("/searchcreator/:term", verify, searchSkillsByCreatorName);
 router.get("/searchsparktoken/:term", verify, searchSkillsBySparktoken);
 router.get("/search/type/:term", verify, searchSkillsByType);
