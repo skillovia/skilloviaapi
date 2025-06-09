@@ -406,27 +406,59 @@ exports.retrieveUserSkill = async (req, res) => {
   }
 };
 
+// exports.searchSkillsByName = async (req, res) => {
+//   const searchTerm = req.params.term;
+
+//   try {
+//     const skill = await Skill.searchSkillsByName(searchTerm);
+//     if (skill && skill.length > 0) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "Search result retrieved successfully.",
+//         data: skill,
+//       });
+//     } else {
+//       res
+//         .status(200)
+//         .json({ status: "success", message: "No record found", data: null });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve skills",
+//       data: error,
+//     });
+//   }
+// };
+// const SkillCategory = require("../models/SkillCategory"); // or correct path
+
 exports.searchSkillsByName = async (req, res) => {
   const searchTerm = req.params.term;
 
   try {
-    const skill = await Skill.searchSkillsByName(searchTerm);
-    if (skill && skill.length > 0) {
+    const categories = await SkillCategory.find({
+      title: { $regex: searchTerm, $options: "i" },
+    });
+
+    if (categories.length > 0) {
       res.status(200).json({
         status: "success",
         message: "Search result retrieved successfully.",
-        data: skill,
+        data: categories,
       });
     } else {
-      res
-        .status(200)
-        .json({ status: "success", message: "No record found", data: null });
+      res.status(200).json({
+        status: "success",
+        message: "No record found",
+        data: [],
+      });
     }
   } catch (error) {
+    console.error("Search error:", error); // add logging
     res.status(500).json({
       status: "error",
       message: "Failed to retrieve skills",
-      data: error,
+      data: error.message || error,
     });
   }
 };
