@@ -1,104 +1,105 @@
 const Skill = require("../models/Skill");
+const SkillCategory = require("../models/SkillCategory");
 
-exports.createSkill = async (req, res) => {
-  console.log("📦 Full Request Body:", req.body);
-  console.log("📸 Uploaded Files:", req.files);
+// exports.createSkill = async (req, res) => {
+//   console.log("📦 Full Request Body:", req.body);
+//   console.log("📸 Uploaded Files:", req.files);
 
-  // Validate request body
-  if (!req.body || Object.keys(req.body).length === 0) {
-    console.error("🚨 Request body is missing.");
-    return res
-      .status(400)
-      .json({ status: "error", message: "Invalid request body." });
-  }
+//   // Validate request body
+//   if (!req.body || Object.keys(req.body).length === 0) {
+//     console.error("🚨 Request body is missing.");
+//     return res
+//       .status(400)
+//       .json({ status: "error", message: "Invalid request body." });
+//   }
 
-  // Extract and trim fields
-  const skill_type = req.body.skill_type ? req.body.skill_type.trim() : null;
-  const experience_level = req.body.experience_level
-    ? req.body.experience_level.trim()
-    : null;
-  const hourly_rate = req.body.hourly_rate
-    ? parseFloat(req.body.hourly_rate)
-    : null;
-  const description = req.body.description ? req.body.description.trim() : null;
+//   // Extract and trim fields
+//   const skill_type = req.body.skill_type ? req.body.skill_type.trim() : null;
+//   const experience_level = req.body.experience_level
+//     ? req.body.experience_level.trim()
+//     : null;
+//   const hourly_rate = req.body.hourly_rate
+//     ? parseFloat(req.body.hourly_rate)
+//     : null;
+//   const description = req.body.description ? req.body.description.trim() : null;
 
-  // ✅ Extract Spark Token from request
-  const spark_token = req.body.spark_token
-    ? String(req.body.spark_token).trim() // Ensure it's treated as a string if needed
-    : null; // Default to null if not provided
-  console.log("📌 spark_token received:", req.body.spark_token);
-  console.log("📌 spark_token after processing:", spark_token);
+//   // ✅ Extract Spark Token from request
+//   const spark_token = req.body.spark_token
+//     ? String(req.body.spark_token).trim() // Ensure it's treated as a string if needed
+//     : null; // Default to null if not provided
+//   console.log("📌 spark_token received:", req.body.spark_token);
+//   console.log("📌 spark_token after processing:", spark_token);
 
-  // Check for missing fields
-  if (!skill_type || !experience_level || !hourly_rate || !description) {
-    console.error("🚨 Missing required fields.");
-    return res
-      .status(400)
-      .json({ status: "error", message: "All fields are required." });
-  }
+//   // Check for missing fields
+//   if (!skill_type || !experience_level || !hourly_rate || !description) {
+//     console.error("🚨 Missing required fields.");
+//     return res
+//       .status(400)
+//       .json({ status: "error", message: "All fields are required." });
+//   }
 
-  console.log("🛠️ Extracted Data:", {
-    skill_type,
-    experience_level,
-    hourly_rate,
-    spark_token, // ✅ Added Spark Token
-    description,
-  });
+//   console.log("🛠️ Extracted Data:", {
+//     skill_type,
+//     experience_level,
+//     hourly_rate,
+//     spark_token, // ✅ Added Spark Token
+//     description,
+//   });
 
-  // Extract file paths from uploaded thumbnails
-  const filePaths = req.files?.thumbnails
-    ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
-    : [];
+//   // Extract file paths from uploaded thumbnails
+//   const filePaths = req.files?.thumbnails
+//     ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
+//     : [];
 
-  console.log("📂 Extracted File Paths:", filePaths);
+//   console.log("📂 Extracted File Paths:", filePaths);
 
-  // Define user ID and data object
-  const userId = req.user.id;
-  const data = {
-    skill_type,
-    experience_level,
-    hourly_rate,
-    spark_token, // ✅ Save Spark Token
-    description,
-    thumbnails: {
-      thumbnail01: filePaths[0] || null,
-      thumbnail02: filePaths[1] || null,
-      thumbnail03: filePaths[2] || null,
-      thumbnail04: filePaths[3] || null,
-    },
-  };
+//   // Define user ID and data object
+//   const userId = req.user.id;
+//   const data = {
+//     skill_type,
+//     experience_level,
+//     hourly_rate,
+//     spark_token, // ✅ Save Spark Token
+//     description,
+//     thumbnails: {
+//       thumbnail01: filePaths[0] || null,
+//       thumbnail02: filePaths[1] || null,
+//       thumbnail03: filePaths[2] || null,
+//       thumbnail04: filePaths[3] || null,
+//     },
+//   };
 
-  console.log("🚀 Data Before Saving:", { userId, ...data });
+//   console.log("🚀 Data Before Saving:", { userId, ...data });
 
-  // Check if spark_token is numeric and parse it correctly
-  const finalSparkToken = spark_token ? parseInt(spark_token, 10) : null;
+//   // Check if spark_token is numeric and parse it correctly
+//   const finalSparkToken = spark_token ? parseInt(spark_token, 10) : null;
 
-  // Log the final value of finalSparkToken before inserting into the database
-  console.log("📌 Final spark_token before inserting:", finalSparkToken);
+//   // Log the final value of finalSparkToken before inserting into the database
+//   console.log("📌 Final spark_token before inserting:", finalSparkToken);
 
-  try {
-    // Create skill in database
-    const skill = await Skill.createSkill(userId, {
-      ...data,
-      spark_token: finalSparkToken, // Pass the correctly parsed finalSparkToken
-    });
+//   try {
+//     // Create skill in database
+//     const skill = await Skill.createSkill(userId, {
+//       ...data,
+//       spark_token: finalSparkToken, // Pass the correctly parsed finalSparkToken
+//     });
 
-    console.log("✅ Skill Created Successfully:", skill);
+//     console.log("✅ Skill Created Successfully:", skill);
 
-    return res.status(201).json({
-      status: "success",
-      message: "Skill created successfully.",
-      data: skill,
-    });
-  } catch (error) {
-    console.error("❌ Database Error:", error);
-    return res.status(500).json({
-      status: "error",
-      message: "Failed to create skill.",
-      error: error.message,
-    });
-  }
-};
+//     return res.status(201).json({
+//       status: "success",
+//       message: "Skill created successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     console.error("❌ Database Error:", error);
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to create skill.",
+//       error: error.message,
+//     });
+//   }
+// };
 
 // exports.updateSkill = async (req, res) => {
 //   const userId = req.user.id;
@@ -146,6 +147,88 @@ exports.createSkill = async (req, res) => {
 //     });
 //   }
 // };
+
+exports.createSkill = async (req, res) => {
+  try {
+    // Validate request body
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Invalid request body." });
+    }
+
+    const skillCategoryId = req.body.skillCategoryId
+      ? req.body.skillCategoryId.trim()
+      : null;
+    const experience_level = req.body.experience_level
+      ? req.body.experience_level.trim()
+      : null;
+    const hourly_rate = req.body.hourly_rate
+      ? parseFloat(req.body.hourly_rate)
+      : null;
+    const description = req.body.description
+      ? req.body.description.trim()
+      : null;
+    const spark_token = req.body.spark_token
+      ? String(req.body.spark_token).trim()
+      : null;
+
+    // Check required fields
+    if (!skillCategoryId || !experience_level || !hourly_rate || !description) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "All fields are required." });
+    }
+
+    // Validate skill category exists and is published
+    const category = await SkillCategory.findOne({
+      _id: skillCategoryId,
+      status: "published",
+    });
+    if (!category) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid or unpublished skill category.",
+      });
+    }
+
+    // Extract thumbnails from uploaded files
+    const filePaths = req.files?.thumbnails
+      ? req.files.thumbnails.map((file) => file.location).slice(0, 4)
+      : [];
+
+    const userId = req.user.id;
+    const data = {
+      skillCategoryId,
+      experience_level,
+      hourly_rate,
+      spark_token: spark_token ? parseInt(spark_token, 10) : null,
+      description,
+      thumbnails: {
+        thumbnail01: filePaths[0] || null,
+        thumbnail02: filePaths[1] || null,
+        thumbnail03: filePaths[2] || null,
+        thumbnail04: filePaths[3] || null,
+      },
+    };
+
+    const skill = await Skill.createSkill(userId, data);
+
+    return res.status(201).json({
+      status: "success",
+      message: "Skill created successfully.",
+      data: skill,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to create skill.",
+      error: error.message,
+    });
+  }
+};
+
 exports.updateSkill = async (req, res) => {
   try {
     const userId = req.user.id;

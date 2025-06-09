@@ -7,7 +7,17 @@ const skillSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    skill_type: { type: String, required: true },
+    // category: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "SkillCategory",
+    //   required: true,
+    // },
+    skillCategoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SkillCategory",
+      required: true,
+    },
+    // skill_type: { type: String, required: true },
     experience_level: String,
     hourly_rate: Number,
     spark_token: Number,
@@ -20,11 +30,9 @@ const skillSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Create a new skill and save it (published by default)
 skillSchema.statics.createSkill = async function (userId, data) {
   const {
-    skill_type,
+    skillCategoryId,
     experience_level,
     hourly_rate,
     spark_token,
@@ -34,7 +42,7 @@ skillSchema.statics.createSkill = async function (userId, data) {
 
   const skill = new this({
     userId,
-    skill_type,
+    skillCategoryId,
     experience_level,
     hourly_rate,
     spark_token: spark_token ? parseInt(spark_token) : null,
@@ -48,6 +56,33 @@ skillSchema.statics.createSkill = async function (userId, data) {
 
   return await skill.save();
 };
+// Create a new skill and save it (published by default)
+// skillSchema.statics.createSkill = async function (userId, data) {
+//   const {
+//     skill_type,
+//     experience_level,
+//     hourly_rate,
+//     spark_token,
+//     description,
+//     thumbnails = {},
+//   } = data;
+
+//   const skill = new this({
+//     userId,
+//     skill_type,
+//     experience_level,
+//     hourly_rate,
+//     spark_token: spark_token ? parseInt(spark_token) : null,
+//     description,
+//     approval_status: "published",
+//     thumbnail01: thumbnails.thumbnail01,
+//     thumbnail02: thumbnails.thumbnail02,
+//     thumbnail03: thumbnails.thumbnail03,
+//     thumbnail04: thumbnails.thumbnail04,
+//   });
+
+//   return await skill.save();
+// };
 
 // Retrieve all skills for a user with populated user info
 skillSchema.statics.retrieveUserSkills = function (userId) {

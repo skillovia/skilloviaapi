@@ -73,3 +73,5 @@ skillCategorySchema.statics.retrieveAll = async function () {
 };
 
 module.exports = mongoose.model("SkillCategory", skillCategorySchema);
+
+// module.exports = mongoose.model("SkillCategory", skillCategorySchema);
