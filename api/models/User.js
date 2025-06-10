@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema(
       // required: true,
       // unique: true,
     },
+    locationName: { type: String },
+
+    // location: {type: String},
     location: {
       type: {
         type: String,
@@ -83,6 +86,43 @@ userSchema.index({ location: "2dsphere" });
 //   return await user.save();
 // };
 
+// userSchema.statics.createUser = async function (data) {
+//   const {
+//     phone,
+//     email,
+//     firstname,
+//     lastname,
+//     gender,
+//     password,
+//     referred_by,
+//     lat,
+//     lon,
+//   } = data;
+
+//   const hashedPassword = await bcrypt.hash(password, 10);
+//   const code = Math.floor(1000 + Math.random() * 900000);
+//   const referralCode = firstname + code;
+
+//   const user = new this({
+//     phone,
+//     email,
+//     firstname,
+//     lastname,
+//     gender,
+//     password: hashedPassword,
+//     is_email_verified: true,
+//     referral_code: referralCode,
+//     referred_by,
+//     lat: lat,
+//     lon: lon,
+//     location: {
+//       type: "Point",
+//       coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
+//     },
+//   });
+
+//   return await user.save();
+// };
 userSchema.statics.createUser = async function (data) {
   const {
     phone,
@@ -94,6 +134,9 @@ userSchema.statics.createUser = async function (data) {
     referred_by,
     lat,
     lon,
+    locationName,
+    street,
+    zip_code,
   } = data;
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -112,6 +155,9 @@ userSchema.statics.createUser = async function (data) {
     referred_by,
     lat: lat,
     lon: lon,
+    locationName: locationName || "", // string location
+    street: street || "",
+    zip_code: zip_code || "",
     location: {
       type: "Point",
       coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
@@ -270,7 +316,11 @@ userSchema.statics.getProfileByUserId = async function (id) {
         appearance_mode: 1,
         photourl: 1,
         bio: 1,
-        location: 1,
+        locationName: 1,
+        // location: {
+        //   type: "Point",
+        //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
+        // },
         street: 1,
         zip_code: 1,
         created_at: 1,
@@ -409,7 +459,11 @@ userSchema.statics.getProfileByUserName = async function (name) {
         email: 1,
         phone: 1,
         bio: 1,
-        location: 1,
+        locationName: 1,
+        // location: {
+        //   type: "Point",
+        //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
+        // },
         photourl: 1,
         created_at: 1,
         updated_at: 1,
@@ -461,7 +515,14 @@ userSchema.statics.changeAvatar = async function (userId, filepath) {
 };
 userSchema.statics.updateBio = async function (userId, data) {
   const updateFields = {};
-  const allowedFields = ["bio", "location", "street", "zip_code", "lon", "lat"];
+  const allowedFields = [
+    "bio",
+    "locationName",
+    "street",
+    "zip_code",
+    "lon",
+    "lat",
+  ];
 
   allowedFields.forEach((field) => {
     if (data[field] !== undefined) {
@@ -558,7 +619,8 @@ userSchema.statics.update = async function (userId, updates) {
     lastname,
     gender,
     password,
-    location,
+    // location,
+    locationName,
     street,
     zip_code,
     lat,
@@ -577,7 +639,7 @@ userSchema.statics.update = async function (userId, updates) {
   if (lastname !== undefined) updateData.lastname = lastname;
   if (gender !== undefined) updateData.gender = gender;
   if (hashedPassword !== undefined) updateData.password = hashedPassword;
-  if (location !== undefined) updateData.location = location;
+  if (locationName !== undefined) updateData.locationName = locationName;
   if (street !== undefined) updateData.street = street;
   if (zip_code !== undefined) updateData.zip_code = zip_code;
   if (lat !== undefined) updateData.lat = lat;
