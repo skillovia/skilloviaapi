@@ -20,6 +20,20 @@ const userSchema = new mongoose.Schema(
       // required: true,
       // unique: true,
     },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+        default: [0, 0],
+      },
+    },
+
     bio: { type: String },
     gender: { type: String },
     location: { type: String },
