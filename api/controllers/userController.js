@@ -9,7 +9,9 @@ const {
 } = require("../utils/stripe");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const Wallet = require("../models/Wallet"); // your Wallet mongoose model
-
+User.syncIndexes()
+  .then(() => console.log("Indexes synced"))
+  .catch((err) => console.error("Error syncing indexes", err));
 exports.updateUser = async (req, res) => {
   const userId = req.params.id;
   const updates = req.body;
