@@ -49,6 +49,22 @@ const Kyc = require("../models/Kyc");
 //       });
 //     }
 // };
+exports.getAllKyc = async (req, res) => {
+  try {
+    const allKycRecords = await Kyc.find().populate("userId", "name email"); // populate user details if needed
+    res.status(200).json({
+      status: "success",
+      message: "All KYC records retrieved successfully.",
+      data: allKycRecords,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve KYC records.",
+      error: error.message,
+    });
+  }
+};
 
 exports.uploadIdentity = async (req, res) => {
   const userId = req.user.id;
@@ -60,21 +76,17 @@ exports.uploadIdentity = async (req, res) => {
 
     try {
       const docs = await Kyc.upload(userId, method, type, fileUrl);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "KYC document uploaded successfully.",
-          data: docs,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "KYC document uploaded successfully.",
+        data: docs,
+      });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "error",
-          message: "Failed to upload document.",
-          data: error,
-        });
+      res.status(500).json({
+        status: "error",
+        message: "Failed to upload document.",
+        data: error,
+      });
     }
   } else {
     res
@@ -93,21 +105,17 @@ exports.uploadUtilityBill = async (req, res) => {
 
     try {
       const docs = await Kyc.upload(userId, method, type, fileUrl);
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "KYC document uploaded successfully.",
-          data: docs,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "KYC document uploaded successfully.",
+        data: docs,
+      });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          status: "error",
-          message: "Failed to upload document.",
-          data: error,
-        });
+      res.status(500).json({
+        status: "error",
+        message: "Failed to upload document.",
+        data: error,
+      });
     }
   } else {
     res
@@ -121,21 +129,17 @@ exports.changeKycStatus = async (req, res) => {
 
   try {
     const data = await Kyc.changeStatus(id, status);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Kyc status updated successfully.",
-        data: data,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Kyc status updated successfully.",
+      data: data,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to update status.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update status.",
+      data: error,
+    });
   }
 };
 
@@ -145,30 +149,24 @@ exports.retrieveUserKycStatus = async (req, res) => {
   try {
     const data = await Kyc.getKycByUserId(userId);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -180,30 +178,24 @@ exports.retrievePendingIdentityKyc = async (req, res) => {
   try {
     const data = await Kyc.getKycs(method, status);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No pending kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No pending kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -215,30 +207,24 @@ exports.retrievePendingUtilityKyc = async (req, res) => {
   try {
     const data = await Kyc.getKycs(method, status);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No pending kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No pending kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -250,30 +236,24 @@ exports.retrieveApprovedIdentityKyc = async (req, res) => {
   try {
     const data = await Kyc.getKycs(method, status);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No pending kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No pending kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -285,30 +265,24 @@ exports.retrieveApprovedUtilityKyc = async (req, res) => {
   try {
     const data = await Kyc.getKycs(method, status);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No pending kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No pending kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -320,30 +294,24 @@ exports.retrieveUserIdentityKyc = async (req, res) => {
   try {
     const data = await Kyc.getUserKyc(userId, method);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -355,30 +323,24 @@ exports.retrieveUserUtilityKyc = async (req, res) => {
   try {
     const data = await Kyc.getUserKyc(userId, method);
     if (data != null) {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "kyc documents retrieved successfully.",
-          data: data,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "kyc documents retrieved successfully.",
+        data: data,
+      });
     } else {
-      res
-        .status(200)
-        .json({
-          status: "success",
-          message: "No kyc document found",
-          data: null,
-        });
+      res.status(200).json({
+        status: "success",
+        message: "No kyc document found",
+        data: null,
+      });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to retrieve kyc documents",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to retrieve kyc documents",
+      data: error,
+    });
   }
 };
 
@@ -389,21 +351,17 @@ exports.removeUserUtilityKyc = async (req, res) => {
 
   try {
     const data = await Kyc.deleteKyc(userId, id, method);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "KYC document removed successfully.",
-        data: data,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "KYC document removed successfully.",
+      data: data,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to remove KYC document.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to remove KYC document.",
+      data: error,
+    });
   }
 };
 
@@ -414,20 +372,16 @@ exports.removeUserIdentificationKyc = async (req, res) => {
 
   try {
     const data = await Kyc.deleteKyc(userId, id, method);
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "KYC document removed successfully.",
-        data: data,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "KYC document removed successfully.",
+      data: data,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: "error",
-        message: "Failed to remove KYC document.",
-        data: error,
-      });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to remove KYC document.",
+      data: error,
+    });
   }
 };

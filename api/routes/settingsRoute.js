@@ -9,6 +9,7 @@ const {
   retrieveApprovedIdentityKyc,
   retrieveApprovedUtilityKyc,
   retrieveUserIdentityKyc,
+  getAllKyc,
   retrieveUserUtilityKyc,
   removeUserUtilityKyc,
   removeUserIdentificationKyc,
@@ -93,6 +94,8 @@ router.post(
   uploadUtilityBill
 );
 router.put("/kyc/admin/approve", verify, changeKycStatus);
+router.get("/kyc/admin/all", verify, getAllKyc);
+
 router.get("/kyc/user/approve/status", verify, retrieveUserKycStatus);
 router.get("/kyc/admin/id/pending", verify, retrievePendingIdentityKyc);
 router.get("/kyc/admin/utility/pending", verify, retrievePendingUtilityKyc);
