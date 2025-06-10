@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+userSchema.index({ location: "2dsphere" });
 
 // Static method to create a user
 userSchema.statics.createUser = async function (data) {
