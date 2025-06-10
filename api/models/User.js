@@ -60,9 +60,41 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ location: "2dsphere" });
 
 // Static method to create a user
+// userSchema.statics.createUser = async function (data) {
+//   const { phone, email, firstname, lastname, gender, password, referred_by } =
+//     data;
+
+//   const hashedPassword = await bcrypt.hash(password, 10);
+//   const code = Math.floor(1000 + Math.random() * 900000);
+//   const referralCode = firstname + code;
+
+//   const user = new this({
+//     phone,
+//     email,
+//     firstname,
+//     lastname,
+//     gender,
+//     password: hashedPassword,
+//     is_email_verified: true, // same as 1 in PG
+//     referral_code: referralCode,
+//     referred_by,
+//   });
+
+//   return await user.save();
+// };
+
 userSchema.statics.createUser = async function (data) {
-  const { phone, email, firstname, lastname, gender, password, referred_by } =
-    data;
+  const {
+    phone,
+    email,
+    firstname,
+    lastname,
+    gender,
+    password,
+    referred_by,
+    lat,
+    lon,
+  } = data;
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const code = Math.floor(1000 + Math.random() * 900000);
@@ -75,9 +107,15 @@ userSchema.statics.createUser = async function (data) {
     lastname,
     gender,
     password: hashedPassword,
-    is_email_verified: true, // same as 1 in PG
+    is_email_verified: true,
     referral_code: referralCode,
     referred_by,
+    lat: lat,
+    lon: lon,
+    location: {
+      type: "Point",
+      coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
+    },
   });
 
   return await user.save();
