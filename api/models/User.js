@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
 
     bio: { type: String },
     gender: { type: String },
-    location: { type: String },
+
     street: { type: String },
     zip_code: { type: String },
     lat: { type: Number },
