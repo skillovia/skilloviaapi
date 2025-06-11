@@ -30,25 +30,57 @@ exports.createSuggestSkill = async (req, res) => {
   }
 };
 
+// exports.updateStatus = async (req, res) => {
+//   const updates = req.body;
+//   const skillId = parseInt(req.params.id);
+
+//   try {
+//     const skill = await SuggestSkill.updateStatus(skillId, updates);
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "Status updated successfully.",
+//       data: skill,
+//     });
+
+//     const findSkill = await SuggestSkill.updateStatus(skillId);
+//     const skillUserId = findSkill.user_id;
+//     await notificationController.storeNotification(skillUserId);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ status: "error", message: "Failed to update suggested skill." });
+//   }
+// };
+
 exports.updateStatus = async (req, res) => {
   const updates = req.body;
-  const skillId = parseInt(req.params.id);
+  const skillId = req.params.id;
 
   try {
-    const skill = await SuggestSkill.updateStatus(skillId, updates);
+    // Update the skill's status
+    const updatedSkill = await SuggestSkill.updateStatus(skillId, updates);
+
     res.status(200).json({
       status: "success",
       message: "Status updated successfully.",
-      data: skill,
+      data: updatedSkill,
     });
 
-    const findSkill = await SuggestSkill.updateStatus(skillId);
-    const skillUserId = findSkill.user_id;
-    await notificationController.storeNotification(skillUserId);
+    // ✅ Send notification only if status is approved
+    if (updates.status === "approved") {
+      const skillUserId = updatedSkill.user_id;
+      await notificationController.storeNotification({
+        userId: skillUserId,
+        title: "Skill Approved",
+        description: `Your suggested skill "${updatedSkill.name}" has been approved.`,
+      });
+    }
   } catch (error) {
-    res
-      .status(500)
-      .json({ status: "error", message: "Failed to update suggested skill." });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update suggested skill.",
+    });
   }
 };
 
