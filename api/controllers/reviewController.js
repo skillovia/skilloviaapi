@@ -59,7 +59,8 @@ exports.createReview = async (req, res) => {
 };
 
 exports.getReviewsForUser = async (req, res) => {
-  const userId = parseInt(req.params.id);
+  // const userId = parseInt(req.params.id);
+  const userId = req.params.id; // ✅ No parseInt
   try {
     const reviews = await Review.getReviewsForUser(userId);
     res.status(200).json({ status: "success", data: reviews });

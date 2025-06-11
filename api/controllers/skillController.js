@@ -289,7 +289,9 @@ exports.updateSkill = async (req, res) => {
 };
 
 exports.updatePublishedStatus = async (req, res) => {
-  const skillId = parseInt(req.params.id);
+  // const skillId = parseInt(req.params.id);
+
+  const skillId = req.params.id;
   const status = "published";
 
   try {
@@ -310,8 +312,9 @@ exports.updatePublishedStatus = async (req, res) => {
 
 exports.deleteSkill = async (req, res) => {
   const userId = req.user.id;
-  const skillId = parseInt(req.params.id);
+  // const skillId = parseInt(req.params.id);
 
+  const skillId = req.params.id;
   try {
     const skill = await Skill.delete(userId, skillId);
     res.status(200).json({
@@ -607,7 +610,9 @@ exports.searchSkillsBySparktoken = async (req, res) => {
 
 exports.deleteSkillPhoto = async (req, res) => {
   const userId = req.user.id;
-  const skillId = parseInt(req.params.id);
+  // const skillId = parseInt(req.params.id);
+
+  const skillId = req.params.id;
   const { key } = req.body;
 
   try {

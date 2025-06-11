@@ -47,8 +47,8 @@ const SkillCategory = require("../models/SkillCategory");
 // };
 
 exports.deleteSkill = async (req, res) => {
-  const skillId = parseInt(req.params.id);
-
+  // const skillId = parseInt(req.params.id);
+  const skillId = req.params.id;
   try {
     const skill = await Admin.deleteSkill(skillId);
     res.status(200).json({
@@ -209,7 +209,7 @@ exports.unPublishSkill = async (req, res) => {
   }
 };
 exports.retrieveUserSkills = async (req, res) => {
-  const userId = parseInt(req.params.id);
+  const userId = req.params.id;
 
   try {
     const skill = await Admin.retrieveUserSkills(userId);
@@ -399,7 +399,10 @@ exports.refreshTokenWeb = async (req, res) => {
   });
 };
 exports.updateUser = async (req, res) => {
-  const userId = parseInt(req.params.id);
+  // const userId = parseInt(req.params.id);
+
+  const userId = req.params.id; // ✅ No parseInt
+
   const updates = req.body;
 
   try {
@@ -457,7 +460,8 @@ exports.getAllusers = async (req, res) => {
   }
 };
 exports.changeUserRole = async (req, res) => {
-  const userId = parseInt(req.params.user_id);
+  // const userId = parseInt(req.params.user_id);
+  const userId = req.params.id;
   const { roleId } = req.body;
 
   try {
@@ -520,7 +524,8 @@ exports.rejectKycStatus = async (req, res) => {
 };
 
 exports.retrieveUserKyc = async (req, res) => {
-  const userId = parseInt(req.params.user_id);
+  // const userId = parseInt(req.params.user_id);
+  const userId = req.params.user_id; // ✅ use as string
 
   try {
     const data = await Admin.getKycByUserId(userId);
@@ -603,8 +608,8 @@ exports.retrieveApprovedKyc = async (req, res) => {
 };
 
 exports.removeKyc = async (req, res) => {
-  const id = parseInt(req.params.id);
-
+  // const id = parseInt(req.params.id);
+  const id = req.params.id;
   try {
     const data = await Admin.deleteKyc(id);
     res.status(200).json({
@@ -622,8 +627,8 @@ exports.removeKyc = async (req, res) => {
 };
 
 exports.getProfileByUserId = async (req, res) => {
-  const userId = parseInt(req.params.id);
-
+  // const userId = parseInt(req.params.id);
+  const userId = req.params.id;
   try {
     const data = await Admin.getProfileByUserId(userId);
 

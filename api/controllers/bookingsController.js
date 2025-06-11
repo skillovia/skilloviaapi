@@ -425,7 +425,8 @@ exports.getOutwardBookingsByUserId = async (req, res) => {
 
 exports.removeBookings = async (req, res) => {
   const userId = req.user.id;
-  const id = parseInt(req.params.id);
+  // const id = parseInt(req.params.id);
+  const id = req.params.id; // Keep it as a string
 
   try {
     const data = await Bookings.deleteBookings(userId, id);

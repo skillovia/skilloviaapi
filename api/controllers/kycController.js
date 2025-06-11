@@ -162,7 +162,8 @@ exports.changeKycStatus = async (req, res) => {
 };
 
 exports.retrieveUserKycStatus = async (req, res) => {
-  const userId = parseInt(req.user.id);
+  // const userId = parseInt(req.user.id);
+  const userId = req.params.id; // ✅ No parseInt
 
   try {
     const data = await Kyc.getKycByUserId(userId);
@@ -364,7 +365,10 @@ exports.retrieveUserUtilityKyc = async (req, res) => {
 
 exports.removeUserUtilityKyc = async (req, res) => {
   const userId = req.user.id;
-  const id = parseInt(req.params.id);
+  // const id = parseInt(req.params.id);
+
+  const id = req.params.id; // Keep it as a string
+
   const method = "utility-bill";
 
   try {
@@ -385,7 +389,9 @@ exports.removeUserUtilityKyc = async (req, res) => {
 
 exports.removeUserIdentificationKyc = async (req, res) => {
   const userId = req.user.id;
-  const id = parseInt(req.params.id);
+  // const id = parseInt(req.params.id);
+  const id = req.params.id; // Keep it as a string
+
   const method = "identification";
 
   try {

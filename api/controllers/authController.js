@@ -190,7 +190,9 @@ const refreshTokenWeb = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
-  const userId = parseInt(req.params.id);
+  // const userId = parseInt(req.params.id);
+  const userId = req.params.id;
+
   const { password, newPassword } = req.body;
 
   if (password != null && newPassword != null) {

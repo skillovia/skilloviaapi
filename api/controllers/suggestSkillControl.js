@@ -86,8 +86,9 @@ exports.updateStatus = async (req, res) => {
 
 exports.deleteSuggestSkill = async (req, res) => {
   const userId = req.user.id;
-  const skillId = parseInt(req.params.id);
+  // const skillId = parseInt(req.params.id);
 
+  const skillId = req.params.id;
   try {
     const skill = await SuggestSkill.delete(skillId);
     res.status(200).json({

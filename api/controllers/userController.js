@@ -1187,7 +1187,8 @@ exports.deleteStripeAccount = async (req, res) => {
 };
 
 exports.getUserStripeAccount = async (req, res) => {
-  const userId = parseInt(req.params.userId);
+  // const userId = parseInt(req.params.userId);
+  const userId = req.params.id; // ✅ No parseInt
 
   if (userId != null) {
     try {
