@@ -1,29 +1,71 @@
 const Messages = require("../models/Messages");
+const Notification = require("../models/Notifications");
 
 // for testing purposes
+// exports.sendMessage = async (req, res) => {
+//   try {
+//     if (
+//       req.body.senderId != null &&
+//       req.body.receiverId != null &&
+//       req.body.content != null
+//     ) {
+//       const message = await Messages.store(req.body);
+//       // ✅ Create a notification for the receiver
+//       await Notification.create({
+//         userId: receiverId,
+//         title: "New Message",
+//         description: `You have a new message from user ${senderId}`,
+//       });
+//       res.status(200).json({
+//         status: "success",
+//         message: "messages sent successfully.",
+//         data: message,
+//       });
+//     } else {
+//       res
+//         .status(200)
+//         .json({ status: "failed", message: "Missing parameter", data: null });
+//     }
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve messages",
+//       data: error,
+//     });
+//   }
+// };
 exports.sendMessage = async (req, res) => {
   try {
-    if (
-      req.body.senderId != null &&
-      req.body.receiverId != null &&
-      req.body.content != null
-    ) {
-      const message = await Messages.store(req.body);
+    const { senderId, receiverId, content } = req.body;
+
+    if (senderId && receiverId && content) {
+      const message = await Messages.store({ senderId, receiverId, content });
+
+      // ✅ Create a notification for the receiver
+      await Notification.store(
+        receiverId,
+        "New Message",
+        `You have a new message from user ${senderId}`
+      );
+
       res.status(200).json({
         status: "success",
-        message: "messages sent successfully.",
+        message: "Message sent successfully.",
         data: message,
       });
     } else {
-      res
-        .status(200)
-        .json({ status: "failed", message: "Missing parameter", data: null });
+      res.status(400).json({
+        status: "failed",
+        message: "Missing parameter(s)",
+        data: null,
+      });
     }
   } catch (error) {
+    console.error("Send Message Error:", error);
     res.status(500).json({
       status: "error",
-      message: "Failed to retrieve messages",
-      data: error,
+      message: "Failed to send message",
+      data: error.message,
     });
   }
 };

@@ -1,4 +1,5 @@
 const Bookings = require("../models/Bookings");
+const Notification = require("../models/Notifications");
 
 // exports.createBookings = async (req, res) => {
 //   const userId = req.user.id;
@@ -135,6 +136,11 @@ exports.rejectBookings = async (req, res) => {
 
   try {
     const data = await Bookings.changeStatus(bookingsId, status);
+    await Notification.create({
+      userId: data.booking_user_id,
+      title: "Booking In Progress",
+      description: `Your booking "${data.title}" is now in progress.`,
+    });
     res.status(200).json({
       status: "success",
       message: "Bookings rejected successfully.",
@@ -155,6 +161,11 @@ exports.acceptBookings = async (req, res) => {
 
   try {
     const data = await Bookings.changeStatus(bookingsId, status);
+    await Notification.create({
+      userId: data.booking_user_id,
+      title: "Booking Accepted",
+      description: `Your booking "${data.title}" has been accepted.`,
+    });
     res.status(200).json({
       status: "success",
       message: "Bookings accepted successfully.",
@@ -196,6 +207,13 @@ exports.startBooking = async (req, res) => {
 
   try {
     const data = await Bookings.changeStatus(bookingId, status);
+
+    await Notification.create({
+      userId: data.booking_user_id,
+      title: "Booking In Progress",
+      description: `Your booking "${data.title}" is now in progress.`,
+    });
+
     res.status(200).json({
       status: "success",
       message: "Booking started successfully.",
@@ -239,6 +257,12 @@ exports.completeBooking = async (req, res) => {
 
   try {
     const data = await Bookings.changeStatus(bookingId, status);
+    await Notification.create({
+      userId: data.booking_user_id,
+      title: "Booking Completed",
+      description: `Your booking "${data.title}" has been completed.`,
+    });
+
     res.status(200).json({
       status: "success",
       message: "Booking completed successfully.",
