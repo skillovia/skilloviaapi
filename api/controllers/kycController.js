@@ -1,5 +1,5 @@
 const Kyc = require("../models/Kyc");
-
+const Notification = require("../models/Notifications");
 // exports.uploadIdentity = async (req, res) => {
 //   const userId = req.user.id;
 //   const method = 'identification';
@@ -129,6 +129,24 @@ exports.changeKycStatus = async (req, res) => {
 
   try {
     const data = await Kyc.changeStatus(id, status);
+    // if (status === "approved") {
+    //   await Notification.create({
+    //     userId: data.user_id, // Make sure your KYC schema has this field
+    //     title: "KYC Approved",
+    //     description: "Your KYC verification has been approved.",
+    //   });
+    // }
+    if (status === "approved" || status === "rejected") {
+      await Notification.create({
+        userId: data.user_id,
+        title: `KYC ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        description:
+          status === "approved"
+            ? "Your KYC verification has been approved."
+            : "Your KYC verification was rejected. Please review and try again.",
+      });
+    }
+
     res.status(200).json({
       status: "success",
       message: "Kyc status updated successfully.",
