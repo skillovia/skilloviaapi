@@ -47,6 +47,14 @@ notificationSchema.statics.getBookingNotifications = async function (userId) {
     .sort({ createdAt: -1 })
     .exec();
 };
+notificationSchema.statics.getMessageNotifications = async function (userId) {
+  return await this.find({
+    userId,
+    title: { $in: ["New Message"] },
+  })
+    .sort({ createdAt: -1 })
+    .exec();
+};
 
 notificationSchema.statics.getFollowNotifications = async function (userId) {
   return await this.find({

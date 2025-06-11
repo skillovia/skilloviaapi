@@ -20,22 +20,22 @@ const userSchema = new mongoose.Schema(
       // required: true,
       // unique: true,
     },
-    locationName: { type: String },
+    // locationName: { type: String },
 
-    // location: {type: String},
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        required: true,
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number], // [longitude, latitude]
-        required: true,
-        default: [0, 0],
-      },
-    },
+    location: { type: String },
+    // location: {
+    //   type: {
+    //     type: String,
+    //     enum: ["Point"],
+    //     required: true,
+    //     default: "Point",
+    //   },
+    //   coordinates: {
+    //     type: [Number], // [longitude, latitude]
+    //     required: true,
+    //     default: [0, 0],
+    //   },
+    // },
 
     bio: { type: String },
     gender: { type: String },
@@ -134,7 +134,8 @@ userSchema.statics.createUser = async function (data) {
     referred_by,
     lat,
     lon,
-    locationName,
+    location,
+    // locationName,
     street,
     zip_code,
   } = data;
@@ -155,13 +156,14 @@ userSchema.statics.createUser = async function (data) {
     referred_by,
     lat: lat,
     lon: lon,
-    locationName: locationName || "", // string location
+    // locationName: locationName || "", // string location
+    location: location || "",
     street: street || "",
     zip_code: zip_code || "",
-    location: {
-      type: "Point",
-      coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
-    },
+    // location: {
+    //   type: "Point",
+    //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
+    // },
   });
 
   return await user.save();
@@ -316,7 +318,8 @@ userSchema.statics.getProfileByUserId = async function (id) {
         appearance_mode: 1,
         photourl: 1,
         bio: 1,
-        locationName: 1,
+        location: 1,
+        // locationName: 1,
         // location: {
         //   type: "Point",
         //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
@@ -459,7 +462,8 @@ userSchema.statics.getProfileByUserName = async function (name) {
         email: 1,
         phone: 1,
         bio: 1,
-        locationName: 1,
+        // locationName: 1,
+        location: 1,
         // location: {
         //   type: "Point",
         //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
@@ -517,7 +521,8 @@ userSchema.statics.updateBio = async function (userId, data) {
   const updateFields = {};
   const allowedFields = [
     "bio",
-    "locationName",
+    "location",
+    // "locationName",
     "street",
     "zip_code",
     "lon",
@@ -619,8 +624,8 @@ userSchema.statics.update = async function (userId, updates) {
     lastname,
     gender,
     password,
-    // location,
-    locationName,
+    location,
+    // locationName,
     street,
     zip_code,
     lat,
@@ -639,7 +644,8 @@ userSchema.statics.update = async function (userId, updates) {
   if (lastname !== undefined) updateData.lastname = lastname;
   if (gender !== undefined) updateData.gender = gender;
   if (hashedPassword !== undefined) updateData.password = hashedPassword;
-  if (locationName !== undefined) updateData.locationName = locationName;
+  // if (locationName !== undefined) updateData.locationName = locationName;
+  if (location !== undefined) updateData.location = location;
   if (street !== undefined) updateData.street = street;
   if (zip_code !== undefined) updateData.zip_code = zip_code;
   if (lat !== undefined) updateData.lat = lat;

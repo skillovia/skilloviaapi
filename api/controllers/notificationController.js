@@ -3,10 +3,9 @@ const Notifications = require("../models/Notifications");
 exports.storeNotification = async (userId, title, description) => {
   try {
     const notification = await Notifications.store(userId, title, description);
-    return true
-
+    return true;
   } catch (error) {
-    return 'Failed to store notifications';
+    return "Failed to store notifications";
   }
 };
 
@@ -32,6 +31,25 @@ exports.getBookingNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
     const bookingNotifications = await Notifications.getBookingNotifications(
+      userId
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: bookingNotifications,
+    });
+  } catch (error) {
+    console.error("Error fetching booking notifications:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch booking notifications",
+    });
+  }
+};
+exports.getMessageNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const bookingNotifications = await Notifications.getMessageNotifications(
       userId
     );
 
