@@ -957,7 +957,7 @@ exports.nearByUsersByAddress = async (req, res) => {
     const { lat, lon } = await geocodeAddress(address);
 
     // Default radius: 5km
-    const users = await User.findNearbyUsers(lat, lon, 100000);
+    const users = await User.findNearbyUsers(lat, lon, 1000000);
 
     return res.status(200).json({
       status: "success",
