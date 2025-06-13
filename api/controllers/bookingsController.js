@@ -138,8 +138,8 @@ exports.rejectBookings = async (req, res) => {
     const data = await Bookings.changeStatus(bookingsId, status);
     await Notification.create({
       userId: data.booking_user_id,
-      title: "Booking In Progress",
-      description: `Your booking "${data.title}" is now in progress.`,
+      title: "Booking Rejected",
+      description: `Your booking "${data.title}" has been rejected.`,
     });
     res.status(200).json({
       status: "success",
@@ -423,22 +423,61 @@ exports.getOutwardBookingsByUserId = async (req, res) => {
   }
 };
 
+// exports.removeBookings = async (req, res) => {
+//   const userId = req.user.id;
+//   // const id = parseInt(req.params.id);
+//   const id = req.params.id; // Keep it as a string
+
+//   try {
+//     const data = await Bookings.deleteBookings(userId, id);
+//     res.status(200).json({
+//       status: "success",
+//       message: "Bookings deleted successfully.",
+//       data: data,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to delete bookings.",
+//       data: error,
+//     });
+//   }
+// };
+
 exports.removeBookings = async (req, res) => {
   const userId = req.user.id;
-  // const id = parseInt(req.params.id);
-  const id = req.params.id; // Keep it as a string
+  const id = req.params.id; // Booking ID
 
   try {
+    // ✅ First, fetch the booking to get user and title before deleting
+    const booking = await Bookings.getBookingById(id); // You should have this method
+    if (!booking) {
+      return res.status(404).json({
+        status: "error",
+        message: "Booking not found.",
+      });
+    }
+
+    // ✅ Then delete it
     const data = await Bookings.deleteBookings(userId, id);
+
+    // ✅ Notify the booking user
+    await Notification.create({
+      userId: booking.booking_user_id,
+      title: "Booking Deleted",
+      description: `Your booking "${booking.title}" has been deleted.`,
+    });
+
     res.status(200).json({
       status: "success",
-      message: "Bookings deleted successfully.",
+      message: "Booking deleted successfully.",
       data: data,
     });
   } catch (error) {
+    console.error("❌ Error deleting booking:", error);
     res.status(500).json({
       status: "error",
-      message: "Failed to delete bookings.",
+      message: "Failed to delete booking.",
       data: error,
     });
   }

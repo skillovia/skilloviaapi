@@ -42,7 +42,17 @@ notificationSchema.statics.markAsSeen = async function (notificationId) {
 notificationSchema.statics.getBookingNotifications = async function (userId) {
   return await this.find({
     userId,
-    title: { $in: ["Booking Created", "New Booking Received"] },
+    title: {
+      $in: [
+        "Booking Created",
+        "New Booking Received",
+        "Booking Accepted",
+        "Booking Rejected",
+        "Booking In Progress",
+        "Booking Completed",
+        "Booking Deleted",
+      ],
+    },
   })
     .sort({ createdAt: -1 })
     .exec();
