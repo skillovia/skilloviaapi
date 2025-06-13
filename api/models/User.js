@@ -630,6 +630,65 @@ userSchema.statics.findNearbyUsersByAddress = async function (address) {
 
 //   return await this.aggregate(pipeline);
 // };
+// userSchema.statics.findNearbyUsers = async function (
+//   lat,
+//   lon,
+//   radiusInMeters = 5000,
+//   state = null
+// ) {
+//   console.log("🧭 Aggregating nearby users");
+//   console.log(
+//     "📌 lat:",
+//     lat,
+//     "lon:",
+//     lon,
+//     "radius:",
+//     radiusInMeters,
+//     "state:",
+//     state
+//   );
+
+//   const pipeline = [
+//     {
+//       $geoNear: {
+//         near: { type: "Point", coordinates: [lon, lat] },
+//         distanceField: "distance",
+//         spherical: true,
+//         maxDistance: radiusInMeters,
+//       },
+//     },
+//   ];
+
+//   if (state) {
+//     pipeline.push({
+//       $match: {
+//         locationName: { $regex: new RegExp(`^${state}$`, "i") },
+//       },
+//     });
+//   }
+
+//   pipeline.push(
+//     {
+//       $project: {
+//         id: 1,
+//         firstname: 1,
+//         lastname: 1,
+//         email: 1,
+//         phone: 1,
+//         gender: 1,
+//         photourl: 1,
+//         lat: "$location.coordinates.1",
+//         lon: "$location.coordinates.0",
+//         locationName: 1,
+//         distance: 1,
+//       },
+//     },
+//     { $sort: { distance: 1 } }
+//   );
+
+//   return await this.aggregate(pipeline);
+// };
+
 userSchema.statics.findNearbyUsers = async function (
   lat,
   lon,
@@ -651,10 +710,13 @@ userSchema.statics.findNearbyUsers = async function (
   const pipeline = [
     {
       $geoNear: {
-        near: { type: "Point", coordinates: [lon, lat] },
+        near: {
+          type: "Point",
+          coordinates: [parseFloat(lon), parseFloat(lat)],
+        },
         distanceField: "distance",
         spherical: true,
-        maxDistance: radiusInMeters,
+        maxDistance: parseFloat(radiusInMeters),
       },
     },
   ];
@@ -688,6 +750,7 @@ userSchema.statics.findNearbyUsers = async function (
 
   return await this.aggregate(pipeline);
 };
+
 userSchema.statics.findNearbyUsersByCoordinates = async function (
   lat,
   lon,
