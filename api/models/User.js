@@ -12,30 +12,25 @@ const userSchema = new mongoose.Schema(
     fullname: { type: String }, // if you need it
     email: {
       type: String,
-      // required: true,
-      // unique: true,
     },
     phone: {
       type: String,
-      // required: true,
-      // unique: true,
     },
-    // locationName: { type: String },
 
-    location: { type: String },
-    // location: {
-    //   type: {
-    //     type: String,
-    //     enum: ["Point"],
-    //     required: true,
-    //     default: "Point",
-    //   },
-    //   coordinates: {
-    //     type: [Number], // [longitude, latitude]
-    //     required: true,
-    //     default: [0, 0],
-    //   },
-    // },
+    locationName: { type: String },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+        default: [0, 0],
+      },
+    },
 
     bio: { type: String },
     gender: { type: String },
@@ -63,66 +58,7 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ location: "2dsphere" });
 
 // Static method to create a user
-// userSchema.statics.createUser = async function (data) {
-//   const { phone, email, firstname, lastname, gender, password, referred_by } =
-//     data;
 
-//   const hashedPassword = await bcrypt.hash(password, 10);
-//   const code = Math.floor(1000 + Math.random() * 900000);
-//   const referralCode = firstname + code;
-
-//   const user = new this({
-//     phone,
-//     email,
-//     firstname,
-//     lastname,
-//     gender,
-//     password: hashedPassword,
-//     is_email_verified: true, // same as 1 in PG
-//     referral_code: referralCode,
-//     referred_by,
-//   });
-
-//   return await user.save();
-// };
-
-// userSchema.statics.createUser = async function (data) {
-//   const {
-//     phone,
-//     email,
-//     firstname,
-//     lastname,
-//     gender,
-//     password,
-//     referred_by,
-//     lat,
-//     lon,
-//   } = data;
-
-//   const hashedPassword = await bcrypt.hash(password, 10);
-//   const code = Math.floor(1000 + Math.random() * 900000);
-//   const referralCode = firstname + code;
-
-//   const user = new this({
-//     phone,
-//     email,
-//     firstname,
-//     lastname,
-//     gender,
-//     password: hashedPassword,
-//     is_email_verified: true,
-//     referral_code: referralCode,
-//     referred_by,
-//     lat: lat,
-//     lon: lon,
-//     location: {
-//       type: "Point",
-//       coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
-//     },
-//   });
-
-//   return await user.save();
-// };
 userSchema.statics.createUser = async function (data) {
   const {
     phone,
@@ -134,8 +70,7 @@ userSchema.statics.createUser = async function (data) {
     referred_by,
     lat,
     lon,
-    location,
-    // locationName,
+    locationName, // <-- accept location name
     street,
     zip_code,
   } = data;
@@ -156,14 +91,13 @@ userSchema.statics.createUser = async function (data) {
     referred_by,
     lat: lat,
     lon: lon,
-    // locationName: locationName || "", // string location
-    location: location || "",
+    locationName: locationName || "", // <-- store string version
+    location: {
+      type: "Point",
+      coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
+    },
     street: street || "",
     zip_code: zip_code || "",
-    // location: {
-    //   type: "Point",
-    //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
-    // },
   });
 
   return await user.save();
@@ -319,6 +253,7 @@ userSchema.statics.getProfileByUserId = async function (id) {
         photourl: 1,
         bio: 1,
         location: 1,
+        locationName: 1,
         // locationName: 1,
         // location: {
         //   type: "Point",
@@ -464,6 +399,7 @@ userSchema.statics.getProfileByUserName = async function (name) {
         bio: 1,
         // locationName: 1,
         location: 1,
+        locationName: 1,
         // location: {
         //   type: "Point",
         //   coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0],
@@ -517,23 +453,70 @@ userSchema.statics.changeAvatar = async function (userId, filepath) {
     { new: true }
   );
 };
+// userSchema.statics.updateBio = async function (userId, data) {
+//   const updateFields = {};
+//   const allowedFields = [
+//     "bio",
+//     "location",
+//     // "locationName",
+//     "street",
+//     "zip_code",
+//     "lon",
+//     "lat",
+//   ];
+
+//   allowedFields.forEach((field) => {
+//     if (data[field] !== undefined) {
+//       updateFields[field] = data[field];
+//     }
+//   });
+
+//   return await this.findByIdAndUpdate(userId, updateFields, { new: true });
+// };
+// userSchema.statics.updateBio = async function (userId, data) {
+//   const updateFields = {};
+//   const allowedFields = ["bio", "street", "zip_code", "lon", "lat"];
+
+//   allowedFields.forEach((field) => {
+//     if (data[field] !== undefined) {
+//       updateFields[field] = data[field];
+//     }
+//   });
+
+//   // Handle GeoJSON location object if lat and lon are provided
+//   if (data.lat !== undefined && data.lon !== undefined) {
+//     updateFields.location = {
+//       type: "Point",
+//       coordinates: [parseFloat(data.lon), parseFloat(data.lat)],
+//     };
+//   }
+
+//   return await this.findByIdAndUpdate(userId, updateFields, { new: true });
+// };
 userSchema.statics.updateBio = async function (userId, data) {
   const updateFields = {};
   const allowedFields = [
     "bio",
-    "location",
-    // "locationName",
     "street",
     "zip_code",
     "lon",
     "lat",
-  ];
+    "locationName",
+  ]; // <-- added locationName
 
   allowedFields.forEach((field) => {
     if (data[field] !== undefined) {
       updateFields[field] = data[field];
     }
   });
+
+  // Handle GeoJSON location object if lat and lon are provided
+  if (data.lat !== undefined && data.lon !== undefined) {
+    updateFields.location = {
+      type: "Point",
+      coordinates: [parseFloat(data.lon), parseFloat(data.lat)],
+    };
+  }
 
   return await this.findByIdAndUpdate(userId, updateFields, { new: true });
 };
@@ -567,16 +550,112 @@ userSchema.statics.updateCoordinates = async function (
   return await this.findByIdAndUpdate(userId, updateFields, { new: true });
 };
 
-userSchema.statics.findNearbyUsers = async function (lat, lon, radiusInKm = 5) {
-  return await this.aggregate([
+// userSchema.statics.findNearbyUsers = async function (lat, lon, radiusInKm = 5) {
+//   return await this.aggregate([
+//     {
+//       $geoNear: {
+//         near: { type: "Point", coordinates: [lon, lat] },
+//         distanceField: "distance",
+//         spherical: true,
+//         maxDistance: radiusInKm * 1000, // convert km to meters
+//       },
+//     },
+//     {
+//       $project: {
+//         id: 1,
+//         firstname: 1,
+//         lastname: 1,
+//         email: 1,
+//         phone: 1,
+//         gender: 1,
+//         photourl: 1,
+//         lat: "$location.coordinates.1",
+//         lon: "$location.coordinates.0",
+//         distance: 1,
+//       },
+//     },
+//     { $sort: { distance: 1 } },
+//   ]);
+// };
+userSchema.statics.findNearbyUsersByAddress = async function (address) {
+  const regex = new RegExp(address, "i"); // case-insensitive regex
+  return await this.find({
+    $or: [{ locationName: { $regex: regex } }, { street: { $regex: regex } }],
+  }).select("id firstname lastname lat lon email phone gender photourl");
+};
+
+// userSchema.statics.findNearbyUsers = async function (
+//   lat,
+//   lon,
+//   radiusInMeters = 8000,
+//   state = null
+// ) {
+//   const pipeline = [
+//     {
+//       $geoNear: {
+//         near: { type: "Point", coordinates: [lon, lat] },
+//         distanceField: "distance",
+//         spherical: true,
+//         maxDistance: radiusInMeters,
+//       },
+//     },
+//   ];
+
+//   if (state) {
+//     pipeline.push({
+//       $match: {
+//         locationName: { $regex: new RegExp(`^${state}$`, "i") }, // case-insensitive match
+//       },
+//     });
+//   }
+
+//   pipeline.push(
+//     {
+//       $project: {
+//         id: 1,
+//         firstname: 1,
+//         lastname: 1,
+//         email: 1,
+//         phone: 1,
+//         gender: 1,
+//         photourl: 1,
+//         lat: "$location.coordinates.1",
+//         lon: "$location.coordinates.0",
+//         locationName: 1,
+//         distance: 1,
+//       },
+//     },
+//     { $sort: { distance: 1 } }
+//   );
+
+//   return await this.aggregate(pipeline);
+// };
+userSchema.statics.findNearbyUsers = async function (
+  lat,
+  lon,
+  radiusInMeters = 5000,
+  state = null
+) {
+  const pipeline = [
     {
       $geoNear: {
         near: { type: "Point", coordinates: [lon, lat] },
         distanceField: "distance",
         spherical: true,
-        maxDistance: radiusInKm * 1000, // convert km to meters
+        maxDistance: radiusInMeters,
       },
     },
+  ];
+
+  if (state) {
+    pipeline.push({
+      $match: {
+        locationName: { $regex: new RegExp(`^${state}$`, "i") },
+      },
+    });
+  }
+
+  pipeline.push(
     {
       $project: {
         id: 1,
@@ -588,17 +667,31 @@ userSchema.statics.findNearbyUsers = async function (lat, lon, radiusInKm = 5) {
         photourl: 1,
         lat: "$location.coordinates.1",
         lon: "$location.coordinates.0",
+        locationName: 1,
         distance: 1,
       },
     },
-    { $sort: { distance: 1 } },
-  ]);
+    { $sort: { distance: 1 } }
+  );
+
+  return await this.aggregate(pipeline);
 };
-userSchema.statics.findNearbyUsersByAddress = async function (address) {
-  const regex = new RegExp(address, "i"); // case-insensitive regex
+userSchema.statics.findNearbyUsersByCoordinates = async function (
+  lat,
+  lon,
+  maxDistanceInMeters = 5000
+) {
   return await this.find({
-    $or: [{ location: { $regex: regex } }, { street: { $regex: regex } }],
-  }).select("id firstname lastname lat lon email phone gender photourl");
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [lon, lat], // note: longitude first!
+        },
+        $maxDistance: maxDistanceInMeters, // e.g., 5000 meters = 5km
+      },
+    },
+  }).select("id firstname lastname email phone gender photourl location");
 };
 
 userSchema.statics.getAllUsers = async function () {
@@ -617,6 +710,97 @@ userSchema.statics.getUsersByReferralCode = async function (code) {
   return await this.find({ referred_by: code });
 };
 
+// userSchema.statics.update = async function (userId, updates) {
+//   const {
+//     email,
+//     firstname,
+//     lastname,
+//     gender,
+//     password,
+//     location,
+//     // locationName,
+//     street,
+//     zip_code,
+//     lat,
+//     lon,
+//     referred_by,
+//     website,
+//   } = updates;
+
+//   const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+
+//   // Build update object, only include fields that are not undefined
+//   const updateData = {};
+
+//   if (email !== undefined) updateData.email = email;
+//   if (firstname !== undefined) updateData.firstname = firstname;
+//   if (lastname !== undefined) updateData.lastname = lastname;
+//   if (gender !== undefined) updateData.gender = gender;
+//   if (hashedPassword !== undefined) updateData.password = hashedPassword;
+//   // if (locationName !== undefined) updateData.locationName = locationName;
+//   if (location !== undefined) updateData.location = location;
+//   if (street !== undefined) updateData.street = street;
+//   if (zip_code !== undefined) updateData.zip_code = zip_code;
+//   if (lat !== undefined) updateData.lat = lat;
+//   if (lon !== undefined) updateData.lon = lon;
+//   if (referred_by !== undefined) updateData.referred_by = referred_by;
+//   if (website !== undefined) updateData.website = website;
+
+//   // Update the document and return the updated document
+//   const updatedUser = await this.findByIdAndUpdate(
+//     userId,
+//     { $set: updateData },
+//     { new: true } // return the updated doc
+//   );
+
+//   return updatedUser;
+// };
+// userSchema.statics.update = async function (userId, updates) {
+//   const {
+//     email,
+//     firstname,
+//     lastname,
+//     gender,
+//     password,
+//     street,
+//     zip_code,
+//     lat,
+//     lon,
+//     referred_by,
+//     website,
+//   } = updates;
+
+//   const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+
+//   // Build update object
+//   const updateData = {};
+
+//   if (email !== undefined) updateData.email = email;
+//   if (firstname !== undefined) updateData.firstname = firstname;
+//   if (lastname !== undefined) updateData.lastname = lastname;
+//   if (gender !== undefined) updateData.gender = gender;
+//   if (hashedPassword !== undefined) updateData.password = hashedPassword;
+//   if (street !== undefined) updateData.street = street;
+//   if (zip_code !== undefined) updateData.zip_code = zip_code;
+//   if (referred_by !== undefined) updateData.referred_by = referred_by;
+//   if (website !== undefined) updateData.website = website;
+
+//   // Only add location if lat & lon are provided
+//   if (lat !== undefined && lon !== undefined) {
+//     updateData.location = {
+//       type: "Point",
+//       coordinates: [parseFloat(lon), parseFloat(lat)],
+//     };
+//   }
+
+//   const updatedUser = await this.findByIdAndUpdate(
+//     userId,
+//     { $set: updateData },
+//     { new: true }
+//   );
+
+//   return updatedUser;
+// };
 userSchema.statics.update = async function (userId, updates) {
   const {
     email,
@@ -624,19 +808,18 @@ userSchema.statics.update = async function (userId, updates) {
     lastname,
     gender,
     password,
-    location,
-    // locationName,
     street,
     zip_code,
     lat,
     lon,
     referred_by,
     website,
+    locationName, // <-- Added support here
   } = updates;
 
   const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
 
-  // Build update object, only include fields that are not undefined
+  // Build update object
   const updateData = {};
 
   if (email !== undefined) updateData.email = email;
@@ -644,20 +827,24 @@ userSchema.statics.update = async function (userId, updates) {
   if (lastname !== undefined) updateData.lastname = lastname;
   if (gender !== undefined) updateData.gender = gender;
   if (hashedPassword !== undefined) updateData.password = hashedPassword;
-  // if (locationName !== undefined) updateData.locationName = locationName;
-  if (location !== undefined) updateData.location = location;
   if (street !== undefined) updateData.street = street;
   if (zip_code !== undefined) updateData.zip_code = zip_code;
-  if (lat !== undefined) updateData.lat = lat;
-  if (lon !== undefined) updateData.lon = lon;
   if (referred_by !== undefined) updateData.referred_by = referred_by;
   if (website !== undefined) updateData.website = website;
+  if (locationName !== undefined) updateData.locationName = locationName; // <-- Add this
 
-  // Update the document and return the updated document
+  // Only add location if lat & lon are provided
+  if (lat !== undefined && lon !== undefined) {
+    updateData.location = {
+      type: "Point",
+      coordinates: [parseFloat(lon), parseFloat(lat)],
+    };
+  }
+
   const updatedUser = await this.findByIdAndUpdate(
     userId,
     { $set: updateData },
-    { new: true } // return the updated doc
+    { new: true }
   );
 
   return updatedUser;

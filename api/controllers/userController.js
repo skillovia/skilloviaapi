@@ -1,6 +1,8 @@
 const Skill = require("../models/Skill");
 const User = require("../models/User");
 const StripeAccount = require("../models/Stripe");
+const geocodeAddress = require("../utils/geocodeAddress"); // Converts address to lat/lon
+
 const bcrypt = require("bcrypt");
 const {
   createConnectedAccount,
@@ -166,14 +168,112 @@ exports.changeAppearanceMode = async (req, res) => {
 //       });
 //   }
 // };
+// exports.getProfileByUserId = async (req, res) => {
+//   const userId = req.params.id; // string id
+
+//   try {
+//     const data = await User.getProfileByUserId(userId);
+
+//     if (!data) {
+//       // no profile found for given userId
+//       return res.status(404).json({
+//         status: "error",
+//         message: "User profile not found.",
+//         data: null,
+//       });
+//     }
+
+//     // destructure properties from data object directly (not data[0])
+//     const {
+//       _id: id, // MongoDB _id, rename to id
+//       phone,
+//       email,
+//       firstname,
+//       lastname,
+//       gender,
+//       notification_type,
+//       appearance_mode,
+//       photourl,
+//       bio,
+//       spark_token_balance,
+//       cash_balance,
+//       total_followers,
+//       total_following,
+//       location,
+//       street,
+//       zip_code,
+//       created_at,
+//       updated_at,
+//       referral_code,
+//       website,
+//       skills,
+//       kyc_status, // new
+//       payment_method, // new
+//       linked_account,
+//     } = data;
+
+//     // Map skills array if exists
+//     const mappedSkills = (skills || []).map((item) => ({
+//       skill_id: item.skill_id,
+//       description: item.description,
+//       skill_type: item.skill_type,
+//       experience_level: item.experience_level,
+//       hourly_rate: item.hourly_rate,
+//       thumbnail01: item.thumbnail01,
+//       thumbnail02: item.thumbnail02,
+//       thumbnail03: item.thumbnail03,
+//       thumbnail04: item.thumbnail04,
+//     }));
+
+//     const userProfile = {
+//       id: id.toString(),
+//       phone,
+//       email,
+//       firstname,
+//       lastname,
+//       gender,
+//       notification_type,
+//       appearance_mode,
+//       photourl,
+//       bio,
+//       spark_token_balance,
+//       cash_balance,
+//       total_followers,
+//       total_following,
+//       location,
+//       street,
+//       zip_code,
+//       referral_code,
+//       website,
+//       created_at,
+//       updated_at,
+//       kyc_status,
+//       payment_method,
+//       linked_account,
+//       skills: mappedSkills,
+//     };
+
+//     return res.status(200).json({
+//       status: "success",
+//       message: "User profile retrieved successfully.",
+//       data: userProfile,
+//     });
+//   } catch (error) {
+//     console.error("Error in getProfileByUserId:", error);
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Failed to retrieve profile.",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.getProfileByUserId = async (req, res) => {
-  const userId = req.params.id; // string id
+  const userId = req.params.id;
 
   try {
     const data = await User.getProfileByUserId(userId);
 
     if (!data) {
-      // no profile found for given userId
       return res.status(404).json({
         status: "error",
         message: "User profile not found.",
@@ -181,9 +281,8 @@ exports.getProfileByUserId = async (req, res) => {
       });
     }
 
-    // destructure properties from data object directly (not data[0])
     const {
-      _id: id, // MongoDB _id, rename to id
+      _id: id,
       phone,
       email,
       firstname,
@@ -198,6 +297,7 @@ exports.getProfileByUserId = async (req, res) => {
       total_followers,
       total_following,
       location,
+      locationName,
       street,
       zip_code,
       created_at,
@@ -205,12 +305,15 @@ exports.getProfileByUserId = async (req, res) => {
       referral_code,
       website,
       skills,
-      kyc_status, // new
-      payment_method, // new
+      kyc_status,
+      payment_method,
       linked_account,
     } = data;
 
-    // Map skills array if exists
+    // Extract lat/lon from GeoJSON location
+    const lat = location?.coordinates?.[1] ?? null;
+    const lon = location?.coordinates?.[0] ?? null;
+
     const mappedSkills = (skills || []).map((item) => ({
       skill_id: item.skill_id,
       description: item.description,
@@ -238,8 +341,12 @@ exports.getProfileByUserId = async (req, res) => {
       cash_balance,
       total_followers,
       total_following,
-      location,
+      location: {
+        lat,
+        lon,
+      },
       street,
+      locationName,
       zip_code,
       referral_code,
       website,
@@ -642,17 +749,133 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-exports.nearByUsers = async (req, res) => {
-  const userId = req.user.id;
-  const lat = req.params.lat;
-  const lon = req.params.lon;
-  const rad = req.params.radius ? req.params.radius : 5;
+// exports.nearByUsers = async (req, res) => {
+//   const userId = req.user.id;
+//   const lat = req.params.lat;
+//   const lon = req.params.lon;
+//   const rad = req.params.radius ? req.params.radius : 5;
 
-  if (!lat || !lon) {
-    return res.status(400).send({
+//   if (!lat || !lon) {
+//     return res.status(400).send({
+//       status: "error",
+//       message: "Latitude and longitude are required",
+//       data: null,
+//     });
+//   }
+
+//   try {
+//     const users = await User.findNearbyUsers(
+//       parseFloat(lat),
+//       parseFloat(lon),
+//       parseFloat(rad)
+//     );
+
+//     if (users && users.length > 0) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "Nearby users retrieved successful",
+//         data: users,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: "success",
+//         message: "No nearby user found",
+//         data: null,
+//       });
+//     }
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error fetching nearby users", error: error.message });
+//   }
+// };
+
+// exports.nearByUsersByAddress = async (req, res) => {
+//   const userId = req.user.id;
+//   const address = req.params.address;
+
+//   if (!address) {
+//     return res.status(400).send({
+//       status: "error",
+//       message: "Address are required",
+//       data: null,
+//     });
+//   }
+
+//   try {
+//     const users = await User.findNearbyUsersByAddress(address);
+//     if (users && users.length > 0) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "Nearby users retrieved successful",
+//         data: users,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: "success",
+//         message: "No nearby user found",
+//         data: null,
+//       });
+//     }
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error fetching nearby users", error: error.message });
+//   }
+// };
+
+// exports.nearByUsers = async (req, res) => {
+//   const lat = req.params.lat;
+//   const lon = req.params.lon;
+//   const rad = req.params.radius ? req.params.radius : 5;
+//   const state = req.query.state; // e.g. "lagos"
+//   console.log("STATE FILTER RECEIVED:", state);
+
+//   if (!lat || !lon) {
+//     return res.status(400).send({
+//       status: "error",
+//       message: "Latitude and longitude are required",
+//       data: null,
+//     });
+//   }
+
+//   try {
+//     const users = await User.findNearbyUsers(
+//       parseFloat(lat),
+//       parseFloat(lon),
+//       parseFloat(rad),
+//       state // pass the state filter here
+//     );
+
+//     if (users && users.length > 0) {
+//       res.status(200).json({
+//         status: "success",
+//         message: "Nearby users retrieved successful",
+//         data: users,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: "success",
+//         message: "No nearby user found",
+//         data: null,
+//       });
+//     }
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error fetching nearby users", error: error.message });
+//   }
+// };
+
+// ✅ Nearby users by coordinates
+exports.nearByUsers = async (req, res) => {
+  const { lat, lon, radius } = req.params;
+  const state = req.query.state || null;
+
+  if (!lat || !lon || !radius) {
+    return res.status(400).json({
       status: "error",
-      message: "Latitude and longitude are required",
-      data: null,
+      message: "Latitude, longitude, and radius are required",
     });
   }
 
@@ -660,63 +883,108 @@ exports.nearByUsers = async (req, res) => {
     const users = await User.findNearbyUsers(
       parseFloat(lat),
       parseFloat(lon),
-      parseFloat(rad)
+      parseFloat(radius),
+      state
     );
 
-    if (users && users.length > 0) {
-      res.status(200).json({
-        status: "success",
-        message: "Nearby users retrieved successful",
-        data: users,
-      });
-    } else {
-      res.status(200).json({
-        status: "success",
-        message: "No nearby user found",
-        data: null,
-      });
-    }
+    return res.status(200).json({
+      status: "success",
+      message: users.length ? "Nearby users retrieved" : "No users found",
+      data: users,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching nearby users", error: error.message });
+    console.error("nearByUsers error:", error.message);
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };
 
+// exports.nearByUsersByAddress = async (req, res) => {
+//   const userId = req.user.id;
+//   const address = req.params.address;
+
+//   if (!address) {
+//     return res.status(400).json({
+//       status: "error",
+//       message: "Address is required",
+//       data: null,
+//     });
+//   }
+
+//   try {
+//     // Convert address string to coordinates
+//     const { lat, lon } = await geocodeAddress(address);
+
+//     // Find users near those coordinates
+//     const users = await User.findNearbyUsers(lat, lon, 5); // 5km radius
+
+//     if (users.length > 0) {
+//       return res.status(200).json({
+//         status: "success",
+//         message: "Nearby users retrieved successfully",
+//         data: users,
+//       });
+//     } else {
+//       return res.status(200).json({
+//         status: "success",
+//         message: "No nearby users found",
+//         data: [],
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error in nearByUsersByAddress:", error.message);
+//     return res.status(500).json({
+//       status: "error",
+//       message: "Error fetching nearby users",
+//       error: error.message,
+//     });
+//   }
+// };
 exports.nearByUsersByAddress = async (req, res) => {
-  const userId = req.user.id;
   const address = req.params.address;
 
   if (!address) {
-    return res.status(400).send({
+    return res.status(400).json({
       status: "error",
-      message: "Address are required",
-      data: null,
+      message: "Address is required",
     });
   }
 
   try {
-    const users = await User.findNearbyUsersByAddress(address);
-    if (users && users.length > 0) {
-      res.status(200).json({
+    const { lat, lon } = await geocodeAddress(address);
+
+    // Default radius: 5km
+    const users = await User.findNearbyUsers(lat, lon, 100000);
+
+    return res.status(200).json({
+      status: "success",
+      message: users.length ? "Nearby users retrieved" : "No users found",
+      data: users,
+    });
+  } catch (geoError) {
+    console.warn("Geocoding failed, falling back to regex match...");
+
+    try {
+      const fallbackUsers = await User.findNearbyUsersByAddress(address);
+      return res.status(200).json({
         status: "success",
-        message: "Nearby users retrieved successful",
-        data: users,
+        message: fallbackUsers.length
+          ? "Users found by text match"
+          : "No users found",
+        data: fallbackUsers,
       });
-    } else {
-      res.status(200).json({
-        status: "success",
-        message: "No nearby user found",
-        data: null,
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message: "Error searching by address",
+        error: error.message,
       });
     }
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching nearby users", error: error.message });
   }
 };
-
 exports.getAllusers = async (req, res) => {
   const userId = req.user.id;
 
