@@ -158,14 +158,53 @@ userSchema.statics.getProfileByUserId = async function (id) {
   const [profile] = await this.aggregate([
     { $match: { _id: new ObjectId(id) } },
 
+    // {
+    //   $lookup: {
+    //     from: "skills",
+    //     localField: "_id",
+    //     foreignField: "userId",
+    //     as: "skills",
+    //   },
+    // },
     {
       $lookup: {
         from: "skills",
-        localField: "_id",
-        foreignField: "userId",
+        let: { userId: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$userId", "$$userId"] } } },
+          {
+            $lookup: {
+              from: "skillcategories", // match skillCategoryId with _id
+              localField: "skillCategoryId",
+              foreignField: "_id",
+              as: "skillCategoryInfo",
+            },
+          },
+          {
+            $unwind: {
+              path: "$skillCategoryInfo",
+              preserveNullAndEmptyArrays: true, // In case category is missing
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              description: 1,
+              spark_token: 1,
+              experience_level: 1,
+              hourly_rate: 1,
+              thumbnail01: 1,
+              thumbnail02: 1,
+              thumbnail03: 1,
+              thumbnail04: 1,
+              skill_type: "$skillCategoryInfo.title", // 🟢 Inject skill type
+            },
+          },
+        ],
         as: "skills",
       },
     },
+
     {
       $lookup: {
         from: "accounts",
