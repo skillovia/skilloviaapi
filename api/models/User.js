@@ -532,6 +532,34 @@ userSchema.statics.changeAvatar = async function (userId, filepath) {
 
 //   return await this.findByIdAndUpdate(userId, updateFields, { new: true });
 // };
+// userSchema.statics.updateBio = async function (userId, data) {
+//   const updateFields = {};
+//   const allowedFields = [
+//     "bio",
+//     "street",
+//     "zip_code",
+//     "lon",
+//     "lat",
+//     "locationName",
+//   ]; // <-- added locationName
+
+//   allowedFields.forEach((field) => {
+//     if (data[field] !== undefined) {
+//       updateFields[field] = data[field];
+//     }
+//   });
+
+//   // Handle GeoJSON location object if lat and lon are provided
+//   if (data.lat !== undefined && data.lon !== undefined) {
+//     updateFields.location = {
+//       type: "Point",
+//       coordinates: [parseFloat(data.lon), parseFloat(data.lat)],
+//     };
+//   }
+
+//   return await this.findByIdAndUpdate(userId, updateFields, { new: true });
+// };
+// models/User.js or your static update method
 userSchema.statics.updateBio = async function (userId, data) {
   const updateFields = {};
   const allowedFields = [
@@ -541,7 +569,7 @@ userSchema.statics.updateBio = async function (userId, data) {
     "lon",
     "lat",
     "locationName",
-  ]; // <-- added locationName
+  ];
 
   allowedFields.forEach((field) => {
     if (data[field] !== undefined) {
@@ -549,11 +577,16 @@ userSchema.statics.updateBio = async function (userId, data) {
     }
   });
 
-  // Handle GeoJSON location object if lat and lon are provided
-  if (data.lat !== undefined && data.lon !== undefined) {
+  // Only add location if lat and lon are valid numbers
+  const lat = parseFloat(data.lat);
+  const lon = parseFloat(data.lon);
+
+  const isValidCoordinate = !isNaN(lat) && !isNaN(lon);
+
+  if (isValidCoordinate) {
     updateFields.location = {
       type: "Point",
-      coordinates: [parseFloat(data.lon), parseFloat(data.lat)],
+      coordinates: [lon, lat], // Note: longitude first
     };
   }
 

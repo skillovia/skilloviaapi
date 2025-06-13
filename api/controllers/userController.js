@@ -509,7 +509,13 @@ exports.updateBio = async (req, res) => {
       data: mode,
     });
   } catch (error) {
-    res.status(500).json({ status: "error", message: "Failed to update bio" });
+    console.error("Error updating bio:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update bio",
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 
