@@ -636,6 +636,18 @@ userSchema.statics.findNearbyUsers = async function (
   radiusInMeters = 5000,
   state = null
 ) {
+  console.log("🧭 Aggregating nearby users");
+  console.log(
+    "📌 lat:",
+    lat,
+    "lon:",
+    lon,
+    "radius:",
+    radiusInMeters,
+    "state:",
+    state
+  );
+
   const pipeline = [
     {
       $geoNear: {

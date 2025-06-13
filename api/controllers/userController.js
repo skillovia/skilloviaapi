@@ -871,7 +871,8 @@ exports.changePassword = async (req, res) => {
 exports.nearByUsers = async (req, res) => {
   const { lat, lon, radius } = req.params;
   const state = req.query.state || null;
-
+  console.log("📥 Received lat, lon, radius:", lat, lon, radius);
+  console.log("🗺️ State filter:", state);
   if (!lat || !lon || !radius) {
     return res.status(400).json({
       status: "error",
@@ -886,6 +887,7 @@ exports.nearByUsers = async (req, res) => {
       parseFloat(radius),
       state
     );
+    console.log(`✅ Found ${users.length} users nearby`);
 
     return res.status(200).json({
       status: "success",
@@ -957,7 +959,7 @@ exports.nearByUsersByAddress = async (req, res) => {
     const { lat, lon } = await geocodeAddress(address);
 
     // Default radius: 5km
-    const users = await User.findNearbyUsers(lat, lon, 1000000);
+    const users = await User.findNearbyUsers(lat, lon, 100000);
 
     return res.status(200).json({
       status: "success",
