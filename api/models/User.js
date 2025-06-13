@@ -374,7 +374,6 @@ userSchema.statics.getProfileByUserId = async function (id) {
 
   return profile;
 };
-// Example usage inside a controller or service:
 
 userSchema.statics.getProfileByUserName = async function (name) {
   const mongoose = require("mongoose");
