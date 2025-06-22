@@ -39,6 +39,7 @@ const allowedOrigins = [
   "https://www.skillovia.co.uk",
   "https://www.skillovia.com",
   "https://skilloviaadmin.vercel.app",
+  "https://admin.skillovia.com",
   "https://www.skilloviaadmin.vercel.app",
 ];
 
