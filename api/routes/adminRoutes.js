@@ -71,7 +71,7 @@ router.post(
 router.post("/users/create/any-account", registerAnyUser);
 router.post("/admin-login", login);
 router.get("/skills/user/:id", verify, retrieveUserSkills);
-router.get("/skills/get/published", verify, retrievePublishedSkill);
+router.get("/skills/get/published", retrievePublishedSkill);
 router.get(
   "/skills/get/unpublished",
   verify,
