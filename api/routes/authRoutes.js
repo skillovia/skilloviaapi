@@ -76,8 +76,11 @@ router.get(
     }
 
     const token = req.user.token;
+    // res.redirect(
+    //   `https://www.skillovia.com/explore?accessToken=${token}&refreshToken=${token}`
+    // );
     res.redirect(
-      `https://www.skillovia.com/explore?accessToken=${token}&refreshToken=${token}`
+      `https://www.skillovia.com/explore?accessToken=${token}&refreshToken=${token}&firstLogin=true`
     );
   }
 );
