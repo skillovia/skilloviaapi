@@ -310,23 +310,54 @@ exports.updatePublishedStatus = async (req, res) => {
   }
 };
 
+// exports.deleteSkill = async (req, res) => {
+//   const userId = req.user.id;
+//   // const skillId = parseInt(req.params.id);
+
+//   const skillId = req.params.id;
+//   try {
+//     const skill = await Skill.delete(userId, skillId);
+//     res.status(200).json({
+//       status: "success",
+//       message: "Skill deleted successfully.",
+//       data: skill,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       status: "error",
+//       message: "Failed to delete skill.",
+//       data: error,
+//     });
+//   }
+// };
 exports.deleteSkill = async (req, res) => {
   const userId = req.user.id;
-  // const skillId = parseInt(req.params.id);
-
   const skillId = req.params.id;
+
   try {
-    const skill = await Skill.delete(userId, skillId);
+    const skill = await Skill.findOneAndDelete({
+      _id: skillId,
+      userId: userId, // to ensure users can only delete their own skills
+    });
+
+    if (!skill) {
+      return res.status(404).json({
+        status: "error",
+        message: "Skill not found or unauthorized.",
+      });
+    }
+
     res.status(200).json({
       status: "success",
       message: "Skill deleted successfully.",
       data: skill,
     });
   } catch (error) {
+    console.error("Delete error:", error); // log the actual error
     res.status(500).json({
       status: "error",
       message: "Failed to delete skill.",
-      data: error,
+      data: error.message, // return just the message
     });
   }
 };
