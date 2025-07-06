@@ -7,7 +7,6 @@ const Notifications = require("../mail/notifications");
 const { getClientIp } = require("../middlewares/ipgetter");
 const { getCoordinatesFromIp } = require("../utils/geolocation");
 const createWalletForUser = require("../utils/createWalletUtils");
-// const { createWalletForUser } = require("./walletController");
 
 const registerUser = async (req, res) => {
   try {
